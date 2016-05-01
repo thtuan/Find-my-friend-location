@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activity.Maps.NewGroupActivity"
+    android:orientation="vertical">
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:textSize="26dp"
+        android:id="@+id/etGroupName"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:hint="Tên nhóm"/>
+    <Button
+        android:id="@+id/btnNewGroup"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:text="Tạo nhóm"
+        android:textSize="26dp"
+        android:textColor="@color/textColor"
+        android:background="@color/colorBlue"/>
+</LinearLayout>
