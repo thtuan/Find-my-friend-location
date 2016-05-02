@@ -13,6 +13,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
@@ -24,7 +25,7 @@ import java.util.List;
 
 public class AddFriendActivity extends AppCompatActivity {
 
-    ParseQuery<ParseUser> queryUser2;
+    ParseQuery<ParseObject> queryObject;
     ParseQuery<ParseUser> queryUser;
     GetFriendInformation getFriendInformation;
     EditText etAdd;
@@ -53,10 +54,10 @@ public class AddFriendActivity extends AppCompatActivity {
 
                 if (MapsActivity.itemSelected != null) {
                     queryUser = ParseUser.getQuery();
-                    queryUser.whereEqualTo("groupName", MapsActivity.itemSelected);
-                    queryUser2 = ParseUser.getQuery();
-                    queryUser2.whereDoesNotMatchKeyInQuery("username", "alias", queryUser).whereContains("username",s.toString());
-                    queryUser2.findInBackground(new FindCallback<ParseUser>() {
+                    queryObject = ParseQuery.getQuery("GroupData");
+                    queryObject.whereEqualTo("groupName", MapsActivity.itemSelected);
+                    queryUser.whereDoesNotMatchKeyInQuery("objectID", "userID", queryObject);
+                    queryUser.findInBackground(new FindCallback<ParseUser>() {
                         @Override
                         public void done(List<ParseUser> list, ParseException e) {
                             arrayAdapter.clear();
