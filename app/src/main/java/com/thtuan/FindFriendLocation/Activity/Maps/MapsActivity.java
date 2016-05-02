@@ -62,6 +62,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     ParseUser myUser;
     ParseObject parseObject;
     ParseQuery<ParseUser>queryUser;
+    ParseQuery<ParseObject> queryObject;
     DrawerLayout drawerLayout;
     NavigationView drawrer;
     Spinner spinner;
@@ -87,7 +88,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         spinner = (Spinner) findViewById(R.id.spinner);
         tvName = (TextView) findViewById(R.id.tvName);
         drawrer = (NavigationView) findViewById(R.id.navigationView);
-        parseObject = new ParseObject("LocationData");
         tvName.setText(myUser.getUsername());
         progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Đang tải map");
@@ -274,26 +274,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
     private void outGroup(){
-        ParseQuery<ParseUser> obj = ParseUser.getQuery();
-        obj.whereEqualTo("groupName",itemSelected).whereEqualTo("username",myUser.getUsername());
-        obj.findInBackground(new FindCallback<ParseUser>() {
+        queryObject = ParseQuery.getQuery("GroupData");
+        queryObject.whereEqualTo("groupName",itemSelected).whereEqualTo("userID",myUser.getObjectId());
+        queryObject.findInBackground(new FindCallback<ParseObject>() {
             @Override
-            public void done(List<ParseUser> list, ParseException e) {
+            public void done(List<ParseObject> list, ParseException e) {
                 if(e == null){
-                    list.get(0).remove("groupName");
-                    JSONArray jsonArray = list.get(0).getJSONArray("groupName");
-                    ArrayList<String> group = new ArrayList<String>();
-                    for(int i = 0; i < jsonArray.length(); i++){
-                        try {
-                            String name = jsonArray.getString(i);
-                            if(!name.equals(itemSelected)){
-                                group.add(name);
-                            }
-                        } catch (JSONException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                    list.get(0).addAllUnique("groupName",group);
+                    list.get(0).deleteInBackground();
                     arrayAdapter.remove(spinner.getItemAtPosition(spinner.getLastVisiblePosition()).toString());
                     spinner.setAdapter(arrayAdapter);
                     tim.getInfor(itemSelected);
@@ -303,25 +290,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
     private void refreshSpiner(){
-        queryUser = ParseUser.getQuery();
-        queryUser.whereEqualTo("username",myUser.getUsername());
-        queryUser.findInBackground(new FindCallback<ParseUser>() {
+        queryObject = ParseQuery.getQuery("GroupData");
+        queryObject.whereEqualTo("userID",myUser.getObjectId());
+        queryObject.findInBackground(new FindCallback<ParseObject>() {
 
             @Override
-            public void done(List<ParseUser> list, ParseException e) {
+            public void done(List<ParseObject> list, ParseException e) {
                 if(e==null){
                     if(list.size()!=0){
                         arrayAdapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_spinner_item);
-                        JSONArray jsonArray = list.get(0).getJSONArray("groupName");
-                        for (int i = 0 ; i < jsonArray.length(); i++){
-                            try {
-                                arrayAdapter.add(jsonArray.getString(i));
-                            } catch (JSONException e1) {
-                                e1.printStackTrace();
-                            }
+
+                        for (ParseObject obj : list){
+                            arrayAdapter.add(obj.getString("groupName"));
                         }
                         spinner.setAdapter(arrayAdapter);
                     }
+                    else
+                        Toast.makeText(getApplicationContext(),"Bạn không có nhóm nào",Toast.LENGTH_SHORT).show();
                 }
                 else {
 

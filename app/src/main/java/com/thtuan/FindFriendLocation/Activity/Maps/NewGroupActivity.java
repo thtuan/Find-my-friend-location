@@ -11,6 +11,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
@@ -26,8 +27,9 @@ public class NewGroupActivity extends Activity{
 
     EditText nameGroup;
     Button newGroup;
-    ParseUser user;
-    ParseQuery<ParseUser> query;
+    ParseUser parseUser;
+    ParseObject parseObject;
+    ParseQuery<ParseObject> query;
     Spinner spinner;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +39,7 @@ public class NewGroupActivity extends Activity{
         newGroup = (Button) findViewById(R.id.btnNewGroup);
         Activity ac = MapsActivity.mContext;
         spinner = (Spinner) ac.findViewById(R.id.spinner);
-        user = ParseUser.getCurrentUser();
+        parseUser = ParseUser.getCurrentUser();
         newGroup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -45,19 +47,21 @@ public class NewGroupActivity extends Activity{
                     Toast.makeText(getApplicationContext(),"Phải nhập tên nhóm",Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    query = ParseUser.getQuery();
+                    query = ParseQuery.getQuery("GroupData");
                     query.whereEqualTo("groupName",nameGroup.getText().toString());
-                    query.findInBackground(new FindCallback<ParseUser>() {
+                    query.findInBackground(new FindCallback<ParseObject>() {
                         @Override
-                        public void done(List<ParseUser> list, ParseException e) {
+                        public void done(List<ParseObject> list, ParseException e) {
                             if(e==null){
                                 if(list.size()!=0){
                                     Toast.makeText(getApplicationContext(),"Tên nhóm đã tồn tại",Toast.LENGTH_SHORT).show();
                                 }
                                 else {
-                                    user.add("groupName",nameGroup.getText().toString());
-                                    user.add("captain",user);
-                                    user.saveInBackground(new SaveCallback() {
+                                    parseObject = new ParseObject("GroupData");
+                                    parseObject.put("groupName",nameGroup.getText().toString());
+                                    parseObject.put("captain",parseUser);
+                                    parseObject.put("userID",parseUser);
+                                    parseObject.saveInBackground(new SaveCallback() {
                                         @Override
                                         public void done(ParseException e) {
                                             if(e==null){
@@ -85,22 +89,17 @@ public class NewGroupActivity extends Activity{
         });
     }
     public void loadSpiner(){
-        query = ParseUser.getQuery();
-        query.whereEqualTo("username",user.getUsername());
-        query.findInBackground(new FindCallback<ParseUser>() {
-
+        query = ParseQuery.getQuery("GroupData");
+        query.whereEqualTo("userID",parseUser.getObjectId());
+        query.findInBackground(new FindCallback<ParseObject>() {
             @Override
-            public void done(List<ParseUser> list, ParseException e) {
+            public void done(List<ParseObject> list, ParseException e) {
                 if(e==null){
                     if(list.size()!=0){
                         MapsActivity.arrayAdapter = new ArrayAdapter<>(getApplicationContext(),android.R.layout.simple_spinner_item);
-                        JSONArray jsonArray = list.get(0).getJSONArray("groupName");
-                        for (int i = 0 ; i < jsonArray.length(); i++){
-                            try {
-                                MapsActivity.arrayAdapter.add(jsonArray.getString(i));
-                            } catch (JSONException e1) {
-                                e1.printStackTrace();
-                            }
+
+                        for (ParseObject obj : list){
+                           MapsActivity.arrayAdapter.add(obj.getString("groupName"));
                         }
                         spinner.setAdapter(MapsActivity.arrayAdapter);
                     }
