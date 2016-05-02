@@ -59,8 +59,9 @@ public class NewGroupActivity extends Activity{
                                 else {
                                     parseObject = new ParseObject("GroupData");
                                     parseObject.put("groupName",nameGroup.getText().toString());
-                                    parseObject.put("captain",parseUser);
+                                    parseObject.put("captainGroup",parseUser);
                                     parseObject.put("userID",parseUser);
+                                    parseObject.put("alias",parseUser.getUsername());
                                     parseObject.saveInBackground(new SaveCallback() {
                                         @Override
                                         public void done(ParseException e) {
@@ -90,7 +91,7 @@ public class NewGroupActivity extends Activity{
     }
     public void loadSpiner(){
         query = ParseQuery.getQuery("GroupData");
-        query.whereEqualTo("userID",parseUser.getObjectId());
+        query.whereEqualTo("userID",parseUser);
         query.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> list, ParseException e) {

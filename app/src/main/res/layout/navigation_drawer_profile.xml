@@ -56,8 +56,5 @@
         android:layout_height="wrap_content"
         android:id="@+id/spinner"
         android:layout_below="@id/tvName"
-        android:layout_alignStart="@id/tvName"
-        android:spinnerMode="dropdown"
-        />
-
+        android:layout_alignStart="@id/tvName" />
 </RelativeLayout>

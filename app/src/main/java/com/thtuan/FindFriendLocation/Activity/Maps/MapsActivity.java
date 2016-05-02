@@ -86,6 +86,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         drawerLayout = (DrawerLayout) findViewById(R.id.MainActivity);
         imgProfile = (ImageView) findViewById(R.id.imgProfile);
         spinner = (Spinner) findViewById(R.id.spinner);
+        spinner.setHorizontalFadingEdgeEnabled(true);
+
+        //spinner.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_light));
         tvName = (TextView) findViewById(R.id.tvName);
         drawrer = (NavigationView) findViewById(R.id.navigationView);
         tvName.setText(myUser.getUsername());
@@ -275,12 +278,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     private void outGroup(){
         queryObject = ParseQuery.getQuery("GroupData");
-        queryObject.whereEqualTo("groupName",itemSelected).whereEqualTo("userID",myUser.getObjectId());
+        queryObject.whereEqualTo("groupName",itemSelected).whereEqualTo("userID",myUser);
         queryObject.findInBackground(new FindCallback<ParseObject>() {
             @Override
-            public void done(List<ParseObject> list, ParseException e) {
+            public void done(final List<ParseObject> list, ParseException e) {
                 if(e == null){
-                    list.get(0).deleteInBackground();
+                    if(list.get(0).getString("captainGroup").equals(myUser.getObjectId())){
+                        ParseQuery<ParseObject> queryObject1 = ParseQuery.getQuery("GroupData");
+                        queryObject1.whereEqualTo("groupName",itemSelected);
+                        queryObject1.findInBackground(new FindCallback<ParseObject>() {
+                            @Override
+                            public void done(List<ParseObject> list1, ParseException e) {
+                                for(ParseObject object : list1){
+                                    object.deleteInBackground();
+                                }
+                            }
+                        });
+                    }
+                     else {
+                        list.get(0).deleteInBackground();
+                    }
                     arrayAdapter.remove(spinner.getItemAtPosition(spinner.getLastVisiblePosition()).toString());
                     spinner.setAdapter(arrayAdapter);
                     tim.getInfor(itemSelected);
@@ -291,14 +308,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     private void refreshSpiner(){
         queryObject = ParseQuery.getQuery("GroupData");
-        queryObject.whereEqualTo("userID",myUser.getObjectId());
+        queryObject.whereEqualTo("userID",myUser);
         queryObject.findInBackground(new FindCallback<ParseObject>() {
 
             @Override
             public void done(List<ParseObject> list, ParseException e) {
                 if(e==null){
                     if(list.size()!=0){
-                        arrayAdapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_spinner_item);
+                        arrayAdapter = new ArrayAdapter<>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item );
+                        arrayAdapter.setDropDownViewResource(R.layout.spinner_item);
 
                         for (ParseObject obj : list){
                             arrayAdapter.add(obj.getString("groupName"));

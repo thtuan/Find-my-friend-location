@@ -29,7 +29,7 @@
         android:icon="@drawable/laucher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        android:theme="@style/AppTheme">
 
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -57,8 +57,7 @@
 
         <activity
             android:name=".Activity.Maps.MapsActivity"
-            android:label="@string/title_activity_maps"
-            android:uiOptions="splitActionBarWhenNarrow">
+            android:label="@string/title_activity_maps">
         </activity>
 
         <activity android:name=".Activity.Login.LoginActivity">
@@ -69,19 +68,17 @@
         </activity>
 
         <activity
-            android:name=".Activity.Login.SignUpActivity"
-            android:theme="@style/AppDialog" />
+            android:name=".Activity.Login.SignUpActivity" />
 
         <activity android:name="com.facebook.FacebookActivity"
             android:label="testFacebook"/>
 
         <activity
-            android:name=".Activity.Maps.NewGroupActivity"
-            android:theme="@style/AppDialog">
+            android:name=".Activity.Maps.NewGroupActivity">
         </activity>
 
         <activity android:name=".Activity.Maps.AddFriendActivity"
-            android:theme="@style/AppDialog">
+            android:parentActivityName=".Activity.Maps.MapsActivity">
         </activity>
     </application>
 

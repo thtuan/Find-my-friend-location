@@ -55,8 +55,10 @@ public class GetFriendInformation {
     public void getInfor(String groupName) {
         if(groupName!=null){
             listName = new ArrayList();
+            ParseQuery<ParseObject> queryObject = ParseQuery.getQuery("GroupData");
+            queryObject.whereEqualTo("groupName",groupName);
             ParseQuery<ParseUser> query = ParseUser.getQuery();
-            query.whereEqualTo("groupName", groupName);
+            query.whereMatchesKeyInQuery("username","alias", queryObject);
             query.findInBackground(new FindCallback<ParseUser>() {
                 @Override
                 public void done(List<ParseUser> list, ParseException e) {

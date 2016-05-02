@@ -1,9 +1,11 @@
 package com.thtuan.FindFriendLocation.Activity.Maps;
 
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -38,8 +40,11 @@ public class AddFriendActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_friend);
+        user = ParseUser.getCurrentUser();
         etAdd = (EditText) findViewById(R.id.etAddfriend);
         getFriendInformation = new GetFriendInformation();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //getSupportActionBar().setDisplayShowHomeEnabled(true);
         etAdd.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -56,7 +61,7 @@ public class AddFriendActivity extends AppCompatActivity {
                     queryUser = ParseUser.getQuery();
                     queryObject = ParseQuery.getQuery("GroupData");
                     queryObject.whereEqualTo("groupName", MapsActivity.itemSelected);
-                    queryUser.whereDoesNotMatchKeyInQuery("objectID", "userID", queryObject);
+                    queryUser.whereDoesNotMatchKeyInQuery("username", "alias", queryObject).whereContains("username",s.toString());
                     queryUser.findInBackground(new FindCallback<ParseUser>() {
                         @Override
                         public void done(List<ParseUser> list, ParseException e) {
@@ -78,7 +83,7 @@ public class AddFriendActivity extends AppCompatActivity {
                 finish();
             }
         });
-        user = ParseUser.getCurrentUser();
+
         lvAllUser = (ListView) findViewById(R.id.lvListAllUser);
         arrayAdapter = new ArrayAdapter<>(getApplicationContext(),R.layout.list_friend);
         getAddList();
@@ -95,60 +100,81 @@ public class AddFriendActivity extends AppCompatActivity {
 
     private boolean AddFriend(final String name) {
         if (MapsActivity.itemSelected != null) {
+
             queryUser = ParseUser.getQuery();
             queryUser.whereEqualTo("username", name);
             queryUser.findInBackground(new FindCallback<ParseUser>() {
                 @Override
-                public void done(List<ParseUser> list, ParseException e) {
-                    if(e == null){
-                        if(list.size()!=0){
-                            list.get(0).add("groupName",name);
-                            list.get(0).saveInBackground(new SaveCallback() {
+                public void done(final List<ParseUser> list, ParseException e) {
+                    if (e == null) {
+                        if (list.size() != 0) {
+                            queryObject = ParseQuery.getQuery("GroupData");
+                            queryObject.whereEqualTo("groupName", MapsActivity.itemSelected).whereEqualTo("userID", list.get(0));
+                            queryObject.findInBackground(new FindCallback<ParseObject>() {
                                 @Override
-                                public void done(ParseException e) {
-                                    if(e==null){
-                                        Toast.makeText(getApplicationContext(),"Thêm vào nhóm thành công",Toast.LENGTH_SHORT).show();
-                                        getFriendInformation.getInfor(MapsActivity.itemSelected);
+                                public void done(List<ParseObject> list1, ParseException e) {
+                                    if (e == null) {
+
+                                        if (list1.size() == 0) {
+                                            ParseObject parseObject = new ParseObject("GroupData");
+                                            parseObject.put("userID", list.get(0));
+                                            parseObject.put("groupName", MapsActivity.itemSelected);
+                                            parseObject.put("alias",list.get(0).getUsername());
+                                            parseObject.saveInBackground(new SaveCallback() {
+                                                @Override
+                                                public void done(ParseException e) {
+                                                    if(e == null){
+                                                        Toast.makeText(getApplicationContext(), "Thêm vào nhóm thành công", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                    else {
+                                                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                                                        return;
+                                                    }
+                                                }
+                                            });
+                                        } else {
+                                            Toast.makeText(getApplicationContext(), "Đã có trong nhóm", Toast.LENGTH_SHORT).show();
+                                            return;
+                                        }
+                                    } else {
+                                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        return;
                                     }
-                                    else
-                                        Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_SHORT).show();
                                 }
                             });
-
-                        }
-                        else{
-                            Toast.makeText(getApplicationContext(),"Không tìm thấy tên",Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Không tìm thấy user này", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                    }
-                    else {
-                        Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
                         return;
                     }
                 }
             });
-            return true;
+
         }
-        else{
-            Toast.makeText(getApplicationContext(),"Bạn chưa có nhóm",Toast.LENGTH_SHORT).show();
-            return false;
-        }
+        return true;
     }
 
     private void getAddList() {
         if (MapsActivity.itemSelected != null) {
-            queryObject = ParseQuery.getQuery("GroupName");
-            queryUser.whereEqualTo("groupName",MapsActivity.itemSelected);
-            queryUser = ParseUser.getQuery();
-            queryUser.whereDoesNotMatchKeyInQuery("ObjectId","userID",queryUser);
+            ParseQuery<ParseObject> queryObject = ParseQuery.getQuery("GroupName");
+            queryObject.whereEqualTo("groupName",MapsActivity.itemSelected);
+            ParseQuery<ParseUser> queryUser = ParseUser.getQuery();
+            queryUser.whereDoesNotMatchKeyInQuery("username","alias",queryObject);
             queryUser.findInBackground(new FindCallback<ParseUser>() {
                 @Override
                 public void done(List<ParseUser> list, ParseException e) {
-                    arrayAdapter.clear();
-                    for (ParseUser obj : list) {
-                        arrayAdapter.add(obj.getUsername());
+                    if(e==null){
+                        if(list.size()!=0){
+                            arrayAdapter.clear();
+                            for (ParseUser obj : list) {
+                                arrayAdapter.add(obj.getUsername());
+                            }
+                            lvAllUser.setAdapter(arrayAdapter);
+                        }
                     }
-                    lvAllUser.setAdapter(arrayAdapter);
                 }
             });
         } else {
@@ -167,4 +193,15 @@ public class AddFriendActivity extends AppCompatActivity {
         }
 
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 }
