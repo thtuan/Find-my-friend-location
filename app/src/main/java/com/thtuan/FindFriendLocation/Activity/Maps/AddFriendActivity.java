@@ -137,11 +137,11 @@ public class AddFriendActivity extends AppCompatActivity {
 
     private void getAddList() {
         if (MapsActivity.itemSelected != null) {
-            queryUser = ParseUser.getQuery();
+            queryObject = ParseQuery.getQuery("GroupName");
             queryUser.whereEqualTo("groupName",MapsActivity.itemSelected);
-            queryUser2 = ParseUser.getQuery();
-            queryUser2.whereDoesNotMatchKeyInQuery("username","username",queryUser);
-            queryUser2.findInBackground(new FindCallback<ParseUser>() {
+            queryUser = ParseUser.getQuery();
+            queryUser.whereDoesNotMatchKeyInQuery("ObjectId","userID",queryUser);
+            queryUser.findInBackground(new FindCallback<ParseUser>() {
                 @Override
                 public void done(List<ParseUser> list, ParseException e) {
                     arrayAdapter.clear();
