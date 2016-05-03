@@ -29,7 +29,7 @@ import java.util.List;
 public class GetFriendInformation {
 
     GoogleMap map;
-    ArrayList listName;
+    public static ArrayList listName;
     ListFriendAdapter adapter;
     ListView listView;
     ArrayList<Marker> lsMarker;
@@ -57,23 +57,23 @@ public class GetFriendInformation {
             listName = new ArrayList();
             ParseQuery<ParseObject> queryObject = ParseQuery.getQuery("GroupData");
             queryObject.whereEqualTo("groupName",groupName);
-            ParseQuery<ParseUser> query = ParseUser.getQuery();
-            query.whereMatchesKeyInQuery("username","alias", queryObject);
-            query.findInBackground(new FindCallback<ParseUser>() {
+            ParseQuery<ParseObject> query = ParseQuery.getQuery("DataUser");
+            query.whereMatchesKeyInQuery("alias","alias", queryObject);
+            query.findInBackground(new FindCallback<ParseObject>() {
                 @Override
-                public void done(List<ParseUser> list, ParseException e) {
+                public void done(List<ParseObject> list, ParseException e) {
                     if (e == null) {
                         map.clear();
                         for (int i = 0; i < list.size(); i++) {
                             final ParseObject obj = list.get(i);
-                            geoPoint = obj.getParseGeoPoint("Location");
+                            geoPoint = obj.getParseGeoPoint("location");
                             latlng = new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
                             lsMarker.add(map.addMarker(new MarkerOptions()
                                     .position(latlng)
                                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))
-                                    .title(obj.getString("username"))
+                                    .title(obj.getString("alias"))
                                     .snippet("đang ở đây")));
-                            listName.add(obj.getString("username"));
+                            listName.add(obj.getString("alias"));
                             latLngs.add(latlng);
                         }
                         adapter = new ListFriendAdapter(MapsActivity.mContext1, listName);
@@ -83,25 +83,31 @@ public class GetFriendInformation {
                 }
             });
         }
-
+        else{
+            listName = new ArrayList();
+            adapter = new ListFriendAdapter(MapsActivity.mContext1, listName);
+            listView.setAdapter(adapter);
+        }
     }
     public void setInfor(final LatLng latlng){
 
-        ParseQuery<ParseUser> query = ParseUser.getQuery();
-        query.whereEqualTo("username", myUser.getUsername());
-        query.findInBackground(new FindCallback<ParseUser>() {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("DataUser");
+        query.whereEqualTo("alias", myUser.getUsername());
+        query.findInBackground(new FindCallback<ParseObject>() {
             @Override
-            public void done(List<ParseUser> list, ParseException e) {
+            public void done(List<ParseObject> list, ParseException e) {
                 if (e == null) {
                     ParseGeoPoint geoPoint = new ParseGeoPoint(latlng.latitude,latlng.longitude);
-                    if (list.size() != 0) {
-                        for (ParseObject obj : list
-                                ) {
-                            obj.put("Location", geoPoint );
-                            obj.saveInBackground();
-                        }
-                    } else {
-                        Toast.makeText(MapsActivity.mContext1, "Có lỗi gì đó" , Toast.LENGTH_SHORT).show();
+                    if (list.size() == 0) {
+                        ParseObject object = new ParseObject("DataUser");
+                        object.put("location", geoPoint );
+                        object.put("alias",myUser.getUsername());
+                        object.saveInBackground();
+
+                    }
+                    else {
+                        list.get(0).put("location",geoPoint);
+                        list.get(0).saveInBackground();
                     }
                 } else {
                     Toast.makeText(MapsActivity.mContext1, e.getMessage(), Toast.LENGTH_SHORT).show();

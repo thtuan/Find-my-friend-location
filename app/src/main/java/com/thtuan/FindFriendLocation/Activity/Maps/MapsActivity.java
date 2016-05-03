@@ -25,6 +25,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,8 +38,10 @@ import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseRelation;
 import com.parse.ParseUser;
 import com.thtuan.FindFriendLocation.Class.GetFriendInformation;
+import com.thtuan.FindFriendLocation.Class.ListFriendAdapter;
 import com.thtuan.FindFriendLocation.Class.MyLocation;
 import com.thtuan.FindFriendLocation.R;
 import com.thtuan.FindFriendLocation.Class.RealPathUtil;
@@ -73,6 +76,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     TextView tvName;
     CountDownTimer countDownTimer;
     public static GoogleMap mMap;
+    ListView lvFriend;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,13 +86,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mContext = this;
         mContext1 = this;
         latLng = new LatLng(0,0);
+        lvFriend = (ListView) findViewById(R.id.lvFriend);
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
         drawerLayout = (DrawerLayout) findViewById(R.id.MainActivity);
         imgProfile = (ImageView) findViewById(R.id.imgProfile);
         spinner = (Spinner) findViewById(R.id.spinner);
         spinner.setHorizontalFadingEdgeEnabled(true);
-
-        //spinner.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_light));
         tvName = (TextView) findViewById(R.id.tvName);
         drawrer = (NavigationView) findViewById(R.id.navigationView);
         tvName.setText(myUser.getUsername());
@@ -122,19 +125,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
         refreshSpiner();
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                itemSelected = arrayAdapter.getItem(position);
-                mMap.clear();
-                tim.getInfor(itemSelected);
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                itemSelected = arrayAdapter.getItem(0);
-            }
-        });
         countDownTimer = new CountDownTimer(60000, 5000) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -151,16 +142,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onResume() {
         super.onResume();
+        itemSelected = null;
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                itemSelected = arrayAdapter.getItem(position);
+                mMap.clear();
+                tim.getInfor(itemSelected);
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                itemSelected =null;
+            }
+        });
         countDownTimer.start();
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String path = preferences.getString("pathImg", "null");
         if (path.equals("null")) {
-
         } else {
             Bitmap bitmap = BitmapFactory.decodeFile(path);
             imgProfile.setImageBitmap(bitmap);
         }
-
     }
 
     @Override
@@ -215,11 +217,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void getAndSetLocation() {
-        if(itemSelected!=null){
+//        if(itemSelected!=null){
             latLng = myLocation.getLocation();
             tim.setInfor(latLng);
             tim.getInfor(itemSelected);
-        }
+//        }
     }
 
     @Override
@@ -277,34 +279,38 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
     private void outGroup(){
-        queryObject = ParseQuery.getQuery("GroupData");
-        queryObject.whereEqualTo("groupName",itemSelected).whereEqualTo("userID",myUser);
-        queryObject.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(final List<ParseObject> list, ParseException e) {
-                if(e == null){
-                    if(list.get(0).getString("captainGroup").equals(myUser.getObjectId())){
-                        ParseQuery<ParseObject> queryObject1 = ParseQuery.getQuery("GroupData");
-                        queryObject1.whereEqualTo("groupName",itemSelected);
-                        queryObject1.findInBackground(new FindCallback<ParseObject>() {
-                            @Override
-                            public void done(List<ParseObject> list1, ParseException e) {
-                                for(ParseObject object : list1){
-                                    object.deleteInBackground();
-                                }
-                            }
-                        });
-                    }
-                     else {
-                        list.get(0).deleteInBackground();
-                    }
-                    arrayAdapter.remove(spinner.getItemAtPosition(spinner.getLastVisiblePosition()).toString());
-                    spinner.setAdapter(arrayAdapter);
-                    tim.getInfor(itemSelected);
-                }
-            }
-        });
+        if(itemSelected!=null){
+            queryObject = ParseQuery.getQuery("GroupData");
+            queryObject.whereEqualTo("groupName",itemSelected).whereEqualTo("alias",myUser.getUsername());
+            queryObject.findInBackground(new FindCallback<ParseObject>() {
+                @Override
+                public void done(final List<ParseObject> list, ParseException e) {
+                    if(e == null){
 
+                        if(list.get(0).getString("alias").equals(myUser.getUsername())){
+                            ParseQuery<ParseObject> queryObject1 = ParseQuery.getQuery("GroupData");
+                            queryObject1.whereEqualTo("groupName",itemSelected);
+                            queryObject1.findInBackground(new FindCallback<ParseObject>() {
+                                @Override
+                                public void done(List<ParseObject> list1, ParseException e) {
+                                    for(ParseObject object : list1){
+                                        object.deleteInBackground();
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            list.get(0).deleteInBackground();
+                        }
+                        arrayAdapter.remove(spinner.getItemAtPosition(spinner.getLastVisiblePosition()).toString());
+                        spinner.setAdapter(arrayAdapter);
+                        tim.getInfor(itemSelected);
+                    }
+                }
+            });
+        }
+        else
+            Toast.makeText(getApplicationContext(),"Bạn chưa có nhóm",Toast.LENGTH_SHORT).show();
     }
     private void refreshSpiner(){
         queryObject = ParseQuery.getQuery("GroupData");
@@ -317,7 +323,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     if(list.size()!=0){
                         arrayAdapter = new ArrayAdapter<>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item );
                         arrayAdapter.setDropDownViewResource(R.layout.spinner_item);
-
                         for (ParseObject obj : list){
                             arrayAdapter.add(obj.getString("groupName"));
                         }

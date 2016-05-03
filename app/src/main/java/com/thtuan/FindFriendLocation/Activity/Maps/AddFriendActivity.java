@@ -159,8 +159,14 @@ public class AddFriendActivity extends AppCompatActivity {
 
     private void getAddList() {
         if (MapsActivity.itemSelected != null) {
-            ParseQuery<ParseObject> queryObject = ParseQuery.getQuery("GroupName");
+            ParseQuery<ParseObject> queryObject = ParseQuery.getQuery("GroupData");
             queryObject.whereEqualTo("groupName",MapsActivity.itemSelected);
+            queryObject.findInBackground(new FindCallback<ParseObject>() {
+                @Override
+                public void done(List<ParseObject> list, ParseException e) {
+                    list.size();
+                }
+            });
             ParseQuery<ParseUser> queryUser = ParseUser.getQuery();
             queryUser.whereDoesNotMatchKeyInQuery("username","alias",queryObject);
             queryUser.findInBackground(new FindCallback<ParseUser>() {
