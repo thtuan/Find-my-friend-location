@@ -15,14 +15,12 @@
         android:layout_height="72dp"
         android:layout_gravity="center"
         android:hint="Ten tai khoan"
-        android:text="thtuan"
         android:textColor="@color/textDark"/>
     <EditText
         android:id="@+id/etPass"
         android:layout_width="match_parent"
         android:layout_height="72dp"
         android:hint="Mat khau"
-        android:text="tuantung"
         android:layout_below="@id/etUser"
         android:layout_marginTop="16dp"
         android:textColor="@color/textDark"
@@ -48,10 +46,10 @@
     <Button
         android:id="@+id/btnLoginFacebook"
         android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:layout_height="wrap_content"
         android:layout_below="@id/btnSignUp"
 
-        android:text="Login with Facebook"
+        android:text="Đăng nhập qua facebook"
         android:textColor="@color/textColor"
         android:textSize="26dp"/>
 

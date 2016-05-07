@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Find Location</string>
-    <string name="title_activity_maps">Map</string>
-    <string name="login">Login</string>
-    <string name="signUp">Sign Up</string>
+    <string name="title_activity_maps">Trang chủ</string>
+    <string name="login">Đăng nhập</string>
+    <string name="signUp">Đăng kí</string>
     <string name="facebook_app_id">602782936569594</string>
 </resources>

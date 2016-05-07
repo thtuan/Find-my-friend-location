@@ -47,53 +47,56 @@ public class LoginActivity extends AppCompatActivity {
         login = (Button) findViewById(R.id.btnLogin);
         signUp = (Button) findViewById(R.id.btnSignUp);
         loginFacebook = (Button) findViewById(R.id.btnLoginFacebook);
-
-        login.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ParseUser.logInInBackground(user.getText().toString(), password.getText().toString(), new LogInCallback() {
-                    @Override
-                    public void done(ParseUser parseUser, ParseException e) {
-                        if (parseUser != null) {
-                            Login();
-                        } else {
-                            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
-            }
-        });
-
-        signUp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent signUpIntent = new Intent(LoginActivity.this,SignUpActivity.class);
-                startActivityForResult(signUpIntent, LOGIN_REQUEST);
-            }
-        });
         if(ParseUser.getCurrentUser()!= null){
             Login();
         }
-        loginFacebook.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ParseFacebookUtils.logInWithReadPermissionsInBackground(LoginActivity.this, permission, new LogInCallback() {
-                    @Override
-                    public void done(ParseUser parseUser, ParseException e) {
-                        if (user == null) {
-                            //Log.d("MyApp", "Uh oh. The user cancelled the Facebook login.");
-                        } else if (parseUser.isNew()) {
-                            saveUser();
-                            Login();
-                            //Log.d("MyApp", "User signed up and logged in through Facebook!");
-                        } else {
-                            //Log.d("MyApp", "User logged in through Facebook!");
-                            Login();
+        else{
+            login.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ParseUser.logInInBackground(user.getText().toString(), password.getText().toString(), new LogInCallback() {
+                        @Override
+                        public void done(ParseUser parseUser, ParseException e) {
+                            if (parseUser != null) {
+                                Login();
+                            } else {
+                                Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+                            }
                         }
-                    }
-                });
-            }
-        });
+                    });
+                }
+            });
+
+            signUp.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent signUpIntent = new Intent(LoginActivity.this,SignUpActivity.class);
+                    startActivityForResult(signUpIntent, LOGIN_REQUEST);
+                }
+            });
+
+            loginFacebook.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ParseFacebookUtils.logInWithReadPermissionsInBackground(LoginActivity.this, permission, new LogInCallback() {
+                        @Override
+                        public void done(ParseUser parseUser, ParseException e) {
+                            if (parseUser == null) {
+                                //Log.d("MyApp", "Uh oh. The user cancelled the Facebook login.");
+                            } else if (parseUser.isNew()) {
+                                saveUser();
+                                Login();
+                                //Log.d("MyApp", "User signed up and logged in through Facebook!");
+                            } else {
+                                //Log.d("MyApp", "User logged in through Facebook!");
+                                Login();
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
     }
 
 

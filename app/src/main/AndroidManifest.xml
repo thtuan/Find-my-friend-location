@@ -68,13 +68,14 @@
         </activity>
 
         <activity
-            android:name=".Activity.Login.SignUpActivity" />
+            android:name=".Activity.Login.SignUpActivity"
+            android:label="Đăng kí" />
 
-        <activity android:name="com.facebook.FacebookActivity"
-            android:label="testFacebook"/>
+        <activity android:name="com.facebook.FacebookActivity" />
 
         <activity
-            android:name=".Activity.Maps.NewGroupActivity">
+            android:name=".Activity.Maps.NewGroupActivity"
+            android:label="Tạo nhóm">
         </activity>
 
         <activity android:name=".Activity.Maps.AddFriendActivity"
