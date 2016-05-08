@@ -15,6 +15,7 @@ public class MyLocation{
     LocationManager locationManager;
     Location location;
     Context context;
+    boolean isHaveLocation;
 //    private static final long MIN_TIME_BW_UPDATE = 2*1000;
 //    private static final float MIN_DISTANCE_UPDATE = 1;
     //boolean isGpsEnable;
@@ -23,6 +24,7 @@ public class MyLocation{
         this.locationManager = locationManager;
         this.context = context;
         this.latLng = latLng;
+        isHaveLocation = false;
     }
 
     public boolean isGpsEnable(){
@@ -38,23 +40,30 @@ public class MyLocation{
         return latLng.latitude;
     }
 
-    public LatLng getLocation(){
+    public LatLng getLatLng() {
+        return latLng;
+    }
+
+    public boolean getLocation(){
 
         location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         if(location!=null){
             latLng = new LatLng(location.getLatitude(),location.getLongitude());
+            isHaveLocation = true;
         }
         else {
-
+            isHaveLocation = false;
         }
         location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if(location!=null){
             latLng = new LatLng(location.getLatitude(),location.getLongitude());
+            isHaveLocation=true;
         }
         else {
+            isHaveLocation = false;
         }
 
-        return latLng;
+        return isHaveLocation;
     }
 
 }

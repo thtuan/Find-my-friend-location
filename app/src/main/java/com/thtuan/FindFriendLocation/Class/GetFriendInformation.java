@@ -37,24 +37,24 @@ public class GetFriendInformation {
     LatLng latlng;
     ParseGeoPoint geoPoint;
     ParseUser myUser;
+    int pos = -1;
     public GetFriendInformation(){
         this.map = MapsActivity.mMap;
         myUser = ParseUser.getCurrentUser();
-        lsMarker = new ArrayList<Marker>();
-        latLngs = new ArrayList<LatLng>();
+
         listView = (ListView) MapsActivity.mContext.findViewById(R.id.lvFriend);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(latLngs.get(position),12));
                 lsMarker.get(position).showInfoWindow();
+                pos = position;
             }
         });
     }
 
     public void getInfor(String groupName) {
         if(groupName!=null){
-            listName = new ArrayList();
             ParseQuery<ParseObject> queryObject = ParseQuery.getQuery("GroupData");
             queryObject.whereEqualTo("groupName",groupName);
             ParseQuery<ParseObject> query = ParseQuery.getQuery("DataUser");
@@ -63,6 +63,9 @@ public class GetFriendInformation {
                 @Override
                 public void done(List<ParseObject> list, ParseException e) {
                     if (e == null) {
+                        listName = new ArrayList();
+                        lsMarker = new ArrayList<Marker>();
+                        latLngs = new ArrayList<LatLng>();
                         map.clear();
                         for (int i = 0; i < list.size(); i++) {
                             final ParseObject obj = list.get(i);
@@ -75,6 +78,9 @@ public class GetFriendInformation {
                                     .snippet("đang ở đây")));
                             listName.add(obj.getString("alias"));
                             latLngs.add(latlng);
+                        }
+                        if(pos!=-1){
+                            lsMarker.get(pos).showInfoWindow();
                         }
                         adapter = new ListFriendAdapter(MapsActivity.mContext1, listName);
                         listView.setAdapter(adapter);
@@ -117,6 +123,35 @@ public class GetFriendInformation {
 
 
     }
+    public void setInfor(final double latitude, final double longitude){
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("DataUser");
+        query.whereEqualTo("alias", myUser.getUsername());
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> list, ParseException e) {
+                if (e == null) {
+                    ParseGeoPoint geoPoint = new ParseGeoPoint(latitude,longitude);
+                    if (list.size() == 0) {
+                        ParseObject object = new ParseObject("DataUser");
+                        object.put("location", geoPoint );
+                        object.put("alias",myUser.getUsername());
+                        object.saveInBackground();
+
+                    }
+                    else {
+                        list.get(0).put("location",geoPoint);
+                        list.get(0).saveInBackground();
+                    }
+                } else {
+                    Toast.makeText(MapsActivity.mContext1, e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+
+    }
+
 
 
 }

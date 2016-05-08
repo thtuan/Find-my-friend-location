@@ -107,6 +107,7 @@ public class AddFriendActivity extends AppCompatActivity {
                 @Override
                 public void done(final List<ParseUser> list, ParseException e) {
                     if (e == null) {
+
                         if (list.size() != 0) {
                             queryObject = ParseQuery.getQuery("GroupData");
                             queryObject.whereEqualTo("groupName", MapsActivity.itemSelected).whereEqualTo("userID", list.get(0));

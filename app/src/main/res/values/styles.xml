@@ -1,12 +1,9 @@
 <resources>
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Base.Theme.AppCompat.Light">
-        <!-- Customize your theme here. -->
+    <style name="AppTheme" parent="@style/Theme.AppCompat.Light">
         <item name="colorPrimary">@color/colorBlue</item>
         <item name="colorPrimaryDark">@android:color/holo_orange_light</item>
         <item name="colorAccent">@color/colorBlue</item>
         <item name="android:textColorPrimary">@android:color/white</item>
     </style>
-    <style name="AppDialog" parent="Base.Theme.AppCompat.Light.Dialog.Alert">
-    </style>
+
 </resources>

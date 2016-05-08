@@ -11,7 +11,8 @@
             android:icon="@drawable/out"
             android:title="Rời nhóm"/>
     </group>
-    <item android:title="Về chúng tôi">
+    <item
+        android:title="Về chúng tôi">
         <menu>
             <item android:id="@+id/contact"
                 android:icon="@drawable/about"

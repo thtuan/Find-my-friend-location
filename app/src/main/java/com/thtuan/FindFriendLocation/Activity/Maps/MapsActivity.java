@@ -20,12 +20,16 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -63,8 +67,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     LocationManager locationManager;
     LatLng latLng;
     ParseUser myUser;
-    ParseObject parseObject;
-    ParseQuery<ParseUser>queryUser;
     ParseQuery<ParseObject> queryObject;
     DrawerLayout drawerLayout;
     NavigationView drawrer;
@@ -77,6 +79,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     CountDownTimer countDownTimer;
     public static GoogleMap mMap;
     ListView lvFriend;
+    boolean canGetLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,15 +88,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         myUser = ParseUser.getCurrentUser();
         mContext = this;
         mContext1 = this;
+
         latLng = new LatLng(0,0);
         lvFriend = (ListView) findViewById(R.id.lvFriend);
-        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
-        drawerLayout = (DrawerLayout) findViewById(R.id.MainActivity);
-        imgProfile = (ImageView) findViewById(R.id.imgProfile);
-        spinner = (Spinner) findViewById(R.id.spinner);
-        spinner.setHorizontalFadingEdgeEnabled(true);
-        tvName = (TextView) findViewById(R.id.tvName);
         drawrer = (NavigationView) findViewById(R.id.navigationView);
+        imgProfile = (ImageView) drawrer.getHeaderView(0).findViewById(R.id.imgProfile);
+        spinner = (Spinner) drawrer.getHeaderView(0).findViewById(R.id.spinner);
+        tvName = (TextView) drawrer.getHeaderView(0).findViewById(R.id.tvName);
         tvName.setText(myUser.getUsername());
         progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Đang tải map");
@@ -106,7 +107,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         myLocation = new MyLocation(this, locationManager, latLng);
-        latLng = myLocation.getLocation();
+        canGetLocation = myLocation.getLocation();
         CheckGPS(myLocation.isGpsEnable());
         imgProfile.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -184,6 +185,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.actionbar_items,menu);
+        return true;
+    }
+
     public void selectDrawerItem(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.newgroup:
@@ -217,11 +225,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     public void getAndSetLocation() {
-//        if(itemSelected!=null){
-            latLng = myLocation.getLocation();
-            tim.setInfor(latLng);
-            tim.getInfor(itemSelected);
-//        }
+            canGetLocation = myLocation.getLocation();
+        tim.getInfor(itemSelected);
+        if (canGetLocation == true){
+            tim.setInfor(myLocation.getLatLng());
+        }
     }
 
     @Override

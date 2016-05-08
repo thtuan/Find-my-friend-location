@@ -24,7 +24,7 @@
         android:layout_below="@id/etUser"
         android:layout_marginTop="16dp"
         android:textColor="@color/textDark"
-        android:password="true"/>
+        android:inputType="textPassword"/>
     <Button
         android:id="@+id/btnLogin"
         android:layout_width="match_parent"
@@ -48,7 +48,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/btnSignUp"
-
         android:text="Đăng nhập qua facebook"
         android:textColor="@color/textColor"
         android:textSize="26dp"/>

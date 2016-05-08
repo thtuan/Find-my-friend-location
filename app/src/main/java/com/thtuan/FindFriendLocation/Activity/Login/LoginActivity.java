@@ -17,10 +17,8 @@ import com.parse.ParseFacebookUtils;
 import com.parse.ParseUser;
 import com.thtuan.FindFriendLocation.Activity.Maps.MapsActivity;
 import com.thtuan.FindFriendLocation.R;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,15 +40,14 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        if(ParseUser.getCurrentUser()!= null){
+            Login();
+        }
         user = (EditText) findViewById(R.id.etUser);
         password = (EditText) findViewById(R.id.etPass);
         login = (Button) findViewById(R.id.btnLogin);
         signUp = (Button) findViewById(R.id.btnSignUp);
         loginFacebook = (Button) findViewById(R.id.btnLoginFacebook);
-        if(ParseUser.getCurrentUser()!= null){
-            Login();
-        }
-        else{
             login.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -95,7 +92,6 @@ public class LoginActivity extends AppCompatActivity {
                     });
                 }
             });
-        }
 
     }
 
