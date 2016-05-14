@@ -10,14 +10,15 @@ import android.widget.TextView;
 import com.thtuan.FindFriendLocation.R;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by ThanhTuan on 06-04-2016.
  */
 public class ListFriendAdapter extends BaseAdapter {
-    ArrayList name;
+    List name;
     LayoutInflater inflater;
-    public ListFriendAdapter(Context context, ArrayList name){
+    public ListFriendAdapter(Context context, List name){
         inflater = LayoutInflater.from(context);
         this.name = name;
     }

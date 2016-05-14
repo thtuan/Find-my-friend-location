@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activity.Maps.NewGroupActivity"
+    tools:context=".Activity.Maps.view.NewGroupActivity"
     android:orientation="vertical">
 
     <EditText

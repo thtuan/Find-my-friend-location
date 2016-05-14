@@ -11,20 +11,20 @@ import com.google.android.gms.maps.model.LatLng;
  */
 public class MyLocation{
 
-    LatLng latLng;
-    LocationManager locationManager;
-    Location location;
-    Context context;
-    boolean isHaveLocation;
+    private LatLng latLng;
+    private LocationManager locationManager;
+    private Location location;
+    private Context context;
+    private boolean canGetLocation;
 //    private static final long MIN_TIME_BW_UPDATE = 2*1000;
 //    private static final float MIN_DISTANCE_UPDATE = 1;
     //boolean isGpsEnable;
 
-    public MyLocation(Context context,LocationManager locationManager, LatLng latLng) {
+    public MyLocation(Context context,LocationManager locationManager) {
         this.locationManager = locationManager;
         this.context = context;
-        this.latLng = latLng;
-        isHaveLocation = false;
+        latLng = new LatLng(0,0);
+        canGetLocation = false;
     }
 
     public boolean isGpsEnable(){
@@ -44,26 +44,26 @@ public class MyLocation{
         return latLng;
     }
 
-    public boolean getLocation(){
+    public LatLng getLocation(){
 
         location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         if(location!=null){
             latLng = new LatLng(location.getLatitude(),location.getLongitude());
-            isHaveLocation = true;
+            canGetLocation = true;
         }
         else {
-            isHaveLocation = false;
+            canGetLocation = false;
         }
         location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         if(location!=null){
             latLng = new LatLng(location.getLatitude(),location.getLongitude());
-            isHaveLocation=true;
+            canGetLocation=true;
         }
         else {
-            isHaveLocation = false;
+            canGetLocation = false;
         }
 
-        return isHaveLocation;
+        return latLng;
     }
 
 }

@@ -41,4 +41,5 @@ dependencies {
         exclude group: 'com.parse.bolts',
                 module: 'bolts-applinks';
     }
+    compile 'com.jakewharton:butterknife:7.0.1'
 }

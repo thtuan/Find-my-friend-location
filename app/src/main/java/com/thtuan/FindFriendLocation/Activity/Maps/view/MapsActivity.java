@@ -1,4 +1,4 @@
-package com.thtuan.FindFriendLocation.Activity.Maps;
+package com.thtuan.FindFriendLocation.Activity.Maps.view;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -15,9 +15,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -26,10 +24,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,41 +33,31 @@ import android.widget.Toast;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
-import com.parse.ParseRelation;
 import com.parse.ParseUser;
-import com.thtuan.FindFriendLocation.Class.GetFriendInformation;
+import com.thtuan.FindFriendLocation.Activity.Maps.presenter.MapPresenter;
+import com.thtuan.FindFriendLocation.Activity.Maps.presenter.MapPresenterMgr;
 import com.thtuan.FindFriendLocation.Class.ListFriendAdapter;
 import com.thtuan.FindFriendLocation.Class.MyLocation;
 import com.thtuan.FindFriendLocation.R;
 import com.thtuan.FindFriendLocation.Class.RealPathUtil;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-
-import java.util.ArrayList;
 import java.util.List;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, LocationListener, GoogleMap.OnMyLocationButtonClickListener {
+public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, LocationListener {
     public static String itemSelected;
     public static Activity mContext;
     public static Context mContext1;
     static ArrayAdapter<String> arrayAdapter;
-    ProgressDialog progressDialog;
-    CoordinatorLayout coordinatorLayout;
     com.thtuan.FindFriendLocation.Class.MyLocation myLocation;
-    LocationManager locationManager;
-    LatLng latLng;
-    ParseUser myUser;
+    public static LocationManager locationManager;
+    public static ParseUser myUser;
     ParseQuery<ParseObject> queryObject;
-    DrawerLayout drawerLayout;
     NavigationView drawrer;
     Spinner spinner;
-    GetFriendInformation tim;
     ImageView imgProfile;
     SharedPreferences preferences;
     String path;
@@ -80,7 +66,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public static GoogleMap mMap;
     ListView lvFriend;
     boolean canGetLocation;
-
+    MapPresenterMgr mapPresenter;
+    private ProgressDialog progressDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -88,27 +75,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         myUser = ParseUser.getCurrentUser();
         mContext = this;
         mContext1 = this;
-
-        latLng = new LatLng(0,0);
         lvFriend = (ListView) findViewById(R.id.lvFriend);
         drawrer = (NavigationView) findViewById(R.id.navigationView);
         imgProfile = (ImageView) drawrer.getHeaderView(0).findViewById(R.id.imgProfile);
         spinner = (Spinner) drawrer.getHeaderView(0).findViewById(R.id.spinner);
         tvName = (TextView) drawrer.getHeaderView(0).findViewById(R.id.tvName);
         tvName.setText(myUser.getUsername());
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle("Đang tải map");
-        progressDialog.setMessage("Vui lòng đợi trong giây lát");
-        progressDialog.setCancelable(true);
-        progressDialog.show();
-        MapFragment mapFragment = (MapFragment) getFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        myLocation = new MyLocation(this, locationManager, latLng);
-        canGetLocation = myLocation.getLocation();
+        myLocation = new MyLocation(this, locationManager);
+        myLocation.getLocation();
         CheckGPS(myLocation.isGpsEnable());
+        mapPresenter = new MapPresenter(this);
+        spinner.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                itemSelected = (String)spinner.getItemAtPosition(0);
+                mapPresenter.loadInfor();
+            }
+        });
         imgProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -125,37 +109,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        refreshSpiner();
-
-        countDownTimer = new CountDownTimer(60000, 5000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                getAndSetLocation();
-            }
-
-            @Override
-            public void onFinish() {
-                countDownTimer.start();
-            }
-        };
+        mapPresenter.loadGroup();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        itemSelected = null;
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                itemSelected = arrayAdapter.getItem(position);
-                mMap.clear();
-                tim.getInfor(itemSelected);
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                itemSelected =null;
-            }
-        });
+        itemSelected = (String)spinner.getItemAtPosition(0);
+        mMap.clear();
+        mapPresenter.loadGroup();
         countDownTimer.start();
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String path = preferences.getString("pathImg", "null");
@@ -179,12 +141,47 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        tim = new GetFriendInformation();
+        countDownTimer = new CountDownTimer(10000,5000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                myLocation.getLocation();
+                mapPresenter.setMapModel(myLocation.getLatLng().latitude,myLocation.getLatLng().longitude);
+                mapPresenter.loadInfor();
+                mapPresenter.loadGroup();
+            }
+
+            @Override
+            public void onFinish() {
+                countDownTimer.start();
+            }
+        }.start();
         googleMap.setOnMapLoadedCallback(this);
         googleMap.setMyLocationEnabled(true);
-
+    }
+    @Override
+    public void onMapLoaded() {
+        progressDialog.dismiss();
     }
 
+    @Override
+    public void onLocationChanged(Location location) {
+        //set thông tin user
+
+//        getAndSetLocation(MapsActivity.itemSelected);
+    }
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+        Toast.makeText(MapsActivity.mContext1, "enable " + provider + " provider", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        Toast.makeText(MapsActivity.mContext1, "disable " + provider + " provider", Toast.LENGTH_LONG).show();
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -211,44 +208,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 break;
         }
 
-    }
-
-    @Override
-    public void onMapLoaded() {
-        progressDialog.dismiss();
-    }
-
-
-    @Override
-    public void onLocationChanged(Location location) {
-        getAndSetLocation();
-    }
-
-    public void getAndSetLocation() {
-            canGetLocation = myLocation.getLocation();
-        tim.getInfor(itemSelected);
-        if (canGetLocation == true){
-            tim.setInfor(myLocation.getLatLng());
-        }
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-        Toast.makeText(this, "enable " + provider + " provider", Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-        Toast.makeText(this, "disable " + provider + " provider", Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public boolean onMyLocationButtonClick() {
-        return false;
     }
 
     @Override
@@ -310,9 +269,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         else {
                             list.get(0).deleteInBackground();
                         }
-                        arrayAdapter.remove(spinner.getItemAtPosition(spinner.getLastVisiblePosition()).toString());
-                        spinner.setAdapter(arrayAdapter);
-                        tim.getInfor(itemSelected);
+                        mapPresenter.loadGroup();
                     }
                 }
             });
@@ -320,29 +277,33 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         else
             Toast.makeText(getApplicationContext(),"Bạn chưa có nhóm",Toast.LENGTH_SHORT).show();
     }
-    private void refreshSpiner(){
-        queryObject = ParseQuery.getQuery("GroupData");
-        queryObject.whereEqualTo("userID",myUser);
-        queryObject.findInBackground(new FindCallback<ParseObject>() {
 
-            @Override
-            public void done(List<ParseObject> list, ParseException e) {
-                if(e==null){
-                    if(list.size()!=0){
-                        arrayAdapter = new ArrayAdapter<>(getApplicationContext(),android.R.layout.simple_spinner_dropdown_item );
-                        arrayAdapter.setDropDownViewResource(R.layout.spinner_item);
-                        for (ParseObject obj : list){
-                            arrayAdapter.add(obj.getString("groupName"));
-                        }
-                        spinner.setAdapter(arrayAdapter);
-                    }
-                    else
-                        Toast.makeText(getApplicationContext(),"Bạn không có nhóm nào",Toast.LENGTH_SHORT).show();
-                }
-                else {
+    @Override
+    public void showMapData() {
+        MapFragment mapFragment = (MapFragment) MapsActivity.mContext.getFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+        progressDialog = new ProgressDialog(MapsActivity.mContext1);
+        progressDialog.setTitle("Đang tải map");
+        progressDialog.setMessage("Vui lòng đợi trong giây lát");
+        progressDialog.setCancelable(true);
+        progressDialog.show();
+    }
 
-                }
-            }
-        });
+    @Override
+    public void showInforData(ListFriendAdapter friendAdapter) {
+        lvFriend.setAdapter(friendAdapter);
+    }
+
+    @Override
+    public void showGroupData(List<String> grouplLst) {
+        arrayAdapter = new ArrayAdapter<>(getApplicationContext(),android.R.layout.simple_spinner_item,grouplLst);
+        spinner.setAdapter(MapsActivity.arrayAdapter);
+    }
+
+    @Override
+    public void showToast(String message) {
+        Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT).show();
     }
 }
+

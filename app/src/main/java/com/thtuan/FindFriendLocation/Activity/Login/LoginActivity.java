@@ -15,7 +15,7 @@ import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseUser;
-import com.thtuan.FindFriendLocation.Activity.Maps.MapsActivity;
+import com.thtuan.FindFriendLocation.Activity.Maps.view.MapsActivity;
 import com.thtuan.FindFriendLocation.R;
 import org.json.JSONException;
 import org.json.JSONObject;

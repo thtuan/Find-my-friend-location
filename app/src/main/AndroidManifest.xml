@@ -56,7 +56,7 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name=".Activity.Maps.MapsActivity"
+            android:name=".Activity.Maps.view.MapsActivity"
             android:label="@string/title_activity_maps"
             android:theme="@style/AppTheme">
         </activity>
@@ -78,13 +78,13 @@
             android:name="com.facebook.FacebookActivity" />
 
         <activity
-            android:name=".Activity.Maps.NewGroupActivity"
+            android:name=".Activity.Maps.view.NewGroupActivity"
             android:label="Tạo nhóm">
         </activity>
 
         <activity
-            android:name=".Activity.Maps.AddFriendActivity"
-            android:parentActivityName=".Activity.Maps.MapsActivity">
+            android:name=".Activity.Maps.view.AddFriendActivity"
+            android:parentActivityName=".Activity.Maps.view.MapsActivity">
         </activity>
     </application>
 
