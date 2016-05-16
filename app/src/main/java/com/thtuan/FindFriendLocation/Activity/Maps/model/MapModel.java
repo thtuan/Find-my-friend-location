@@ -81,7 +81,7 @@ public class MapModel implements MapModelMgr {
             ParseQuery<ParseObject> queryObject = ParseQuery.getQuery("GroupData");
             queryObject.whereEqualTo("groupName",MapsActivity.itemSelected);
             ParseQuery<ParseObject> query = ParseQuery.getQuery("DataUser");
-            query.whereMatchesKeyInQuery("alias","alias", queryObject);
+            query.whereMatchesQuery("userID", queryObject);
             query.findInBackground(findCallback);
         }
         else{
@@ -107,6 +107,7 @@ public class MapModel implements MapModelMgr {
                     ParseGeoPoint geoPoint = new ParseGeoPoint(latitude,longitude);
                     if (list.size() == 0) {
                         ParseObject object = new ParseObject("DataUser");
+                        object.put("userID",MapsActivity.myUser);
                         object.put("location", geoPoint );
                         object.put("alias",MapsActivity.myUser.getUsername());
                         object.saveInBackground();

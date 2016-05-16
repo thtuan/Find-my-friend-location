@@ -37,9 +37,11 @@ public class AddFriendActivity extends AppCompatActivity implements AddFriendMgr
         etAdd = (EditText) findViewById(R.id.etAddfriend);
         lvAllUser = (ListView) findViewById(R.id.lvListAllUser);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        addFriendPresenterMgr.getCanAddFriendList("");
         etAdd.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
             }
 
             @Override
@@ -49,22 +51,6 @@ public class AddFriendActivity extends AppCompatActivity implements AddFriendMgr
             @Override
             public void afterTextChanged(Editable s) {
                 addFriendPresenterMgr.getCanAddFriendList(s.toString());
-                /*if (MapsActivity.itemSelected != null) {
-                    queryUser = ParseUser.getQuery();
-                    queryObject = ParseQuery.getQuery("GroupData");
-                    queryObject.whereEqualTo("groupName", MapsActivity.itemSelected);
-                    queryUser.whereDoesNotMatchKeyInQuery("username", "alias", queryObject).whereContains("username",s.toString());
-                    queryUser.findInBackground(new FindCallback<ParseUser>() {
-                        @Override
-                        public void done(List<ParseUser> list, ParseException e) {
-                            arrayAdapter.clear();
-                            for (ParseUser obj : list) {
-                                arrayAdapter.add(obj.getUsername());
-                            }
-                            lvAllUser.setAdapter(arrayAdapter);
-                        }
-                    });
-                }*/
             }
         });
 //        addFriendPresenterMgr.getCanAddFriendList();

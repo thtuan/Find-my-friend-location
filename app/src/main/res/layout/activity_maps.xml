@@ -32,7 +32,6 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:choiceMode="singleChoice"
-        android:background="@color/textColor"
         app:menu="@menu/navigation_drawer_content"
         app:headerLayout="@layout/navigation_drawer_profile"
         app:itemTextColor="@color/colorBlue">

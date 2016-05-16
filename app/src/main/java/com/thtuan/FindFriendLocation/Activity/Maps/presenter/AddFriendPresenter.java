@@ -44,12 +44,12 @@ public class AddFriendPresenter implements AddFriendPresenterMgr{
                             @Override
                             public void done(ParseException e) {
                                 if(e == null){
-                                    createToast("Thêm vào nhóm thành công");
-                                    addFriendMgr.removeAtPostion(position);
+                                    createToast("Thêm "+user.getUsername()+" vào nhóm thành công");
+
                                     addFriendMgr.isSuccess(true);
                                 }
                                 else {
-                                    createToast(e.getMessage());
+                                    createToast("Lỗi: "+e.getMessage());
                                     return;
                                 }
                             }
@@ -62,7 +62,7 @@ public class AddFriendPresenter implements AddFriendPresenterMgr{
                     }
                 }
                 else {
-                    createToast(e.getMessage());
+                    createToast("Lỗi: "+e.getMessage());
                     addFriendMgr.isSuccess(false);
                     return;
                 }
@@ -74,6 +74,7 @@ public class AddFriendPresenter implements AddFriendPresenterMgr{
     @Override
     public void getFriend(String name, final int position) {
         if (MapsActivity.itemSelected != null){
+            addFriendMgr.removeAtPostion(position);
             mapModelMgr.getUser(name, new FindCallback<ParseUser>() {
                 @Override
                 public void done(List<ParseUser> list, ParseException e) {
@@ -86,7 +87,7 @@ public class AddFriendPresenter implements AddFriendPresenterMgr{
                         }
                     }
                     else {
-                        createToast(e.getMessage());
+                        createToast("Lỗi: "+e.getMessage());
                     }
                 }
             });
@@ -99,7 +100,7 @@ public class AddFriendPresenter implements AddFriendPresenterMgr{
             ParseQuery<ParseObject> queryObject = ParseQuery.getQuery("GroupData");
             queryObject.whereEqualTo("groupName", MapsActivity.itemSelected);
             ParseQuery<ParseUser> queryUser = ParseUser.getQuery();
-            queryUser.whereDoesNotMatchKeyInQuery("username","alias",queryObject);
+            queryUser.whereDoesNotMatchKeyInQuery("username","alias",queryObject).whereContains("username",s);
             queryUser.findInBackground(new FindCallback<ParseUser>() {
                 @Override
                 public void done(List<ParseUser> list, ParseException e) {
@@ -113,7 +114,7 @@ public class AddFriendPresenter implements AddFriendPresenterMgr{
                         }
                     }
                     else {
-                        createToast(e.getMessage());
+                        createToast("Lỗi: "+e.getMessage());
                     }
                 }
             });

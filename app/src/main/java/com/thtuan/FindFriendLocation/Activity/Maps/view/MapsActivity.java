@@ -30,9 +30,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -51,6 +54,7 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
     public static String itemSelected;
     public static Activity mContext;
     public static Context mContext1;
+    private int pos = -1;
     static ArrayAdapter<String> arrayAdapter;
     com.thtuan.FindFriendLocation.Class.MyLocation myLocation;
     public static LocationManager locationManager;
@@ -65,7 +69,6 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
     CountDownTimer countDownTimer;
     public static GoogleMap mMap;
     ListView lvFriend;
-    boolean canGetLocation;
     MapPresenterMgr mapPresenter;
     private ProgressDialog progressDialog;
     @Override
@@ -75,6 +78,9 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
         myUser = ParseUser.getCurrentUser();
         mContext = this;
         mContext1 = this;
+        MapFragment mapFragment = (MapFragment) MapsActivity.mContext.getFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
         lvFriend = (ListView) findViewById(R.id.lvFriend);
         drawrer = (NavigationView) findViewById(R.id.navigationView);
         imgProfile = (ImageView) drawrer.getHeaderView(0).findViewById(R.id.imgProfile);
@@ -86,11 +92,30 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
         myLocation.getLocation();
         CheckGPS(myLocation.isGpsEnable());
         mapPresenter = new MapPresenter(this);
-        spinner.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        progressDialog = new ProgressDialog(MapsActivity.mContext1);
+        progressDialog.setTitle("Đang tải map");
+        progressDialog.setMessage("Vui lòng đợi trong giây lát");
+        progressDialog.setCancelable(true);
+        progressDialog.show();
+        lvFriend.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                itemSelected = (String)spinner.getItemAtPosition(0);
+                pos = position;
+                mapPresenter.moveCamera(position);
+                mapPresenter.showInforFriend(position);
+
+            }
+        });
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                itemSelected = (String)spinner.getItemAtPosition(position);
                 mapPresenter.loadInfor();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
             }
         });
         imgProfile.setOnClickListener(new View.OnClickListener() {
@@ -109,16 +134,13 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
             }
         });
 
-        mapPresenter.loadGroup();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         itemSelected = (String)spinner.getItemAtPosition(0);
-        mMap.clear();
         mapPresenter.loadGroup();
-        countDownTimer.start();
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String path = preferences.getString("pathImg", "null");
         if (path.equals("null")) {
@@ -135,19 +157,33 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
         SharedPreferences.Editor edit = preferences.edit();
         edit.putString("pathImg", path);
         edit.commit();
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
         countDownTimer.cancel();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        countDownTimer.start();
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        googleMap.getUiSettings().setCompassEnabled(true);
+        googleMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.clear();
         countDownTimer = new CountDownTimer(10000,5000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 myLocation.getLocation();
                 mapPresenter.setMapModel(myLocation.getLatLng().latitude,myLocation.getLatLng().longitude);
                 mapPresenter.loadInfor();
-                mapPresenter.loadGroup();
             }
 
             @Override
@@ -181,12 +217,6 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
     @Override
     public void onProviderDisabled(String provider) {
         Toast.makeText(MapsActivity.mContext1, "disable " + provider + " provider", Toast.LENGTH_LONG).show();
-    }
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.actionbar_items,menu);
-        return true;
     }
 
     public void selectDrawerItem(MenuItem item) {
@@ -261,43 +291,46 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
                                 @Override
                                 public void done(List<ParseObject> list1, ParseException e) {
                                     for(ParseObject object : list1){
-                                        object.deleteInBackground();
+                                        object.deleteInBackground(new DeleteCallback() {
+                                            @Override
+                                            public void done(ParseException e) {
+                                                showToast("Bạn đã giải tán nhóm "+ itemSelected);
+                                            }
+                                        });
                                     }
                                 }
                             });
                         }
                         else {
-                            list.get(0).deleteInBackground();
+                            list.get(0).deleteInBackground(new DeleteCallback() {
+                                @Override
+                                public void done(ParseException e) {
+                                    showToast("Bạn đã rời nhóm "+ itemSelected);
+                                }
+                            });
                         }
                         mapPresenter.loadGroup();
+                        pos = -1;
                     }
+
                 }
             });
         }
         else
             Toast.makeText(getApplicationContext(),"Bạn chưa có nhóm",Toast.LENGTH_SHORT).show();
     }
-
-    @Override
-    public void showMapData() {
-        MapFragment mapFragment = (MapFragment) MapsActivity.mContext.getFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-        progressDialog = new ProgressDialog(MapsActivity.mContext1);
-        progressDialog.setTitle("Đang tải map");
-        progressDialog.setMessage("Vui lòng đợi trong giây lát");
-        progressDialog.setCancelable(true);
-        progressDialog.show();
-    }
-
     @Override
     public void showInforData(ListFriendAdapter friendAdapter) {
         lvFriend.setAdapter(friendAdapter);
+        if (pos != -1){
+            mapPresenter.showInforFriend(pos);
+        }
     }
 
     @Override
     public void showGroupData(List<String> grouplLst) {
         arrayAdapter = new ArrayAdapter<>(getApplicationContext(),android.R.layout.simple_spinner_item,grouplLst);
+        arrayAdapter.setDropDownViewResource(R.layout.spinner_item);
         spinner.setAdapter(MapsActivity.arrayAdapter);
     }
 
