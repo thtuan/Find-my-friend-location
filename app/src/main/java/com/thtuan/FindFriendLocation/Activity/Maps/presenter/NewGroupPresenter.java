@@ -34,7 +34,7 @@ public class NewGroupPresenter implements NewGroupPresenterMgr {
                     else {
                         ParseObject parseObject = new ParseObject("GroupData");
                         parseObject.put("groupName",groupName);
-                        parseObject.put("captainGroup", MapsActivity.myUser);
+                        parseObject.put("captainGroup", MapsActivity.myUser.getUsername());
                         parseObject.put("userID",MapsActivity.myUser);
                         parseObject.put("alias",MapsActivity.myUser.getUsername());
                         parseObject.saveInBackground(new SaveCallback() {

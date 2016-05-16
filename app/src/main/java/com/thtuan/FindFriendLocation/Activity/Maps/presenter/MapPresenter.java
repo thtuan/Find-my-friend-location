@@ -9,6 +9,7 @@ import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.thtuan.FindFriendLocation.Activity.Maps.model.MapModel;
 import com.thtuan.FindFriendLocation.Activity.Maps.model.MapModelMgr;
@@ -85,39 +86,47 @@ public class MapPresenter implements MapPresenterMgr {
     public void loadInfor() {
         mapModelMgr.loadInfor(new FindCallback<ParseObject>() {
             @Override
-            public void done(List<ParseObject> listUser, ParseException e) {
+            public void done(final List<ParseObject> listUser, ParseException e) {
                 if(e == null){
                     if(!listUser.isEmpty()){
-                        MapsActivity.mMap.clear();
-                        listName = new ArrayList<String>();
-                        lsMarker = new ArrayList<Marker>();
-                        latLngs = new ArrayList<LatLng>();
-                        for (int i = 0; i < listUser.size(); i++) {
-                            final ParseObject obj = listUser.get(i);
-                            geoPoint = obj.getParseGeoPoint("location");
-                            latLng = new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
-                            if(obj.getParseUser("userID").getUsername().equals(obj.getParseUser("captainGroup").getUsername())){
-                                lsMarker.add(MapsActivity.mMap.addMarker(new MarkerOptions()
-                                        .position(latLng)
-                                        .icon(BitmapDescriptorFactory.defaultMarker())
-                                        .title(obj.getString("alias")+"(Đội trưởng)")
-                                        .snippet("đang ở đây")));
-                                listName.add(obj.getString("alias"));
-                                latLngs.add(latLng);
-                            }
-                            else {
-                                lsMarker.add(MapsActivity.mMap.addMarker(new MarkerOptions()
-                                        .position(latLng)
-                                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))
-                                        .title(obj.getString("alias"))
-                                        .snippet("đang ở đây")));
-                                listName.add(obj.getString("alias"));
-                                latLngs.add(latLng);
-                            }
+                        ParseQuery<ParseObject> parseQuery = ParseQuery.getQuery("GroupData");
+                        parseQuery.whereEqualTo("groupName",MapsActivity.itemSelected).whereExists("captainGroup");
+                        parseQuery.findInBackground(new FindCallback<ParseObject>() {
+                            @Override
+                            public void done(List<ParseObject> list, ParseException e) {
+                                MapsActivity.mMap.clear();
+                                listName = new ArrayList<String>();
+                                lsMarker = new ArrayList<Marker>();
+                                latLngs = new ArrayList<LatLng>();
+                                for (int i = 0; i < listUser.size(); i++) {
+                                    final ParseObject obj = listUser.get(i);
+                                    geoPoint = obj.getParseGeoPoint("location");
+                                    latLng = new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
 
-                        }
-                        userAdapter = new ListFriendAdapter(MapsActivity.mContext1,listName);
-                        mapMgr.showInforData(userAdapter);
+                                    if(obj.getString("alias").equals(list.get(0).getString("captainGroup"))){
+                                        lsMarker.add(MapsActivity.mMap.addMarker(new MarkerOptions()
+                                                .position(latLng)
+                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.captain))
+                                                .title(obj.getString("alias")+"(Đội trưởng)")
+                                                .snippet("đang ở đây")));
+                                        listName.add(obj.getString("alias"));
+                                        latLngs.add(latLng);
+                                    }
+                                    else {
+                                        lsMarker.add(MapsActivity.mMap.addMarker(new MarkerOptions()
+                                                .position(latLng)
+                                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.marker))
+                                                .title(obj.getString("alias"))
+                                                .snippet("đang ở đây")));
+                                        listName.add(obj.getString("alias"));
+                                        latLngs.add(latLng);
+                                    }
+                                }
+                                userAdapter = new ListFriendAdapter(MapsActivity.mContext1,listName);
+                                mapMgr.showInforData(userAdapter);
+                            }
+                        });
+
                     }
                     else {
                         mapMgr.showToast("Không có thành viên trong nhóm");
@@ -126,10 +135,7 @@ public class MapPresenter implements MapPresenterMgr {
                 else {
                     mapMgr.showToast(e.getMessage());
                 }
-
             }
         });
     }
-
-
 }

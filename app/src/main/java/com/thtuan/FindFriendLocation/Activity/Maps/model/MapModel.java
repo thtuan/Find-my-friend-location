@@ -81,7 +81,7 @@ public class MapModel implements MapModelMgr {
             ParseQuery<ParseObject> queryObject = ParseQuery.getQuery("GroupData");
             queryObject.whereEqualTo("groupName",MapsActivity.itemSelected);
             ParseQuery<ParseObject> query = ParseQuery.getQuery("DataUser");
-            query.whereMatchesQuery("userID", queryObject);
+            query.whereMatchesKeyInQuery("alias","alias", queryObject);
             query.findInBackground(findCallback);
         }
         else{

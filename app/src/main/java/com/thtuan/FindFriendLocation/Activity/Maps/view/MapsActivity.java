@@ -236,6 +236,14 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
             case R.id.outgroup:
                 outGroup();
                 break;
+            case R.id.contact:
+                Intent intentContact = new Intent(MapsActivity.this, ContactActivity.class);
+                startActivity(intentContact);
+                break;
+            case R.id.infor:
+                Intent intentInfor = new Intent(MapsActivity.this, InforActivity.class);
+                startActivity(intentInfor);
+                break;
         }
 
     }
@@ -283,7 +291,6 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
                 @Override
                 public void done(final List<ParseObject> list, ParseException e) {
                     if(e == null){
-
                         if(list.get(0).getString("alias").equals(myUser.getUsername())){
                             ParseQuery<ParseObject> queryObject1 = ParseQuery.getQuery("GroupData");
                             queryObject1.whereEqualTo("groupName",itemSelected);
@@ -294,10 +301,11 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
                                         object.deleteInBackground(new DeleteCallback() {
                                             @Override
                                             public void done(ParseException e) {
-                                                showToast("Bạn đã giải tán nhóm "+ itemSelected);
+
                                             }
                                         });
                                     }
+                                    showToast("Bạn đã giải tán nhóm "+ itemSelected);
                                 }
                             });
                         }
