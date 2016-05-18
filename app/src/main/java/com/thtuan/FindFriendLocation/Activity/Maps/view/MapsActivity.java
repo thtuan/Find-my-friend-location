@@ -297,15 +297,21 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
                             queryObject1.findInBackground(new FindCallback<ParseObject>() {
                                 @Override
                                 public void done(List<ParseObject> list1, ParseException e) {
-                                    for(ParseObject object : list1){
-                                        object.deleteInBackground(new DeleteCallback() {
-                                            @Override
-                                            public void done(ParseException e) {
-
-                                            }
-                                        });
+                                    for(int i = 0; i < list1.size(); i++){
+                                        ParseObject object = list1.get(i);
+                                        if(i == list1.size()-1){
+                                            object.deleteInBackground(new DeleteCallback() {
+                                                @Override
+                                                public void done(ParseException e) {
+                                                    mapPresenter.loadGroup();
+                                                    showToast("Bạn đã giải tán nhóm "+ itemSelected);
+                                                }
+                                            });
+                                        }
+                                        else {
+                                            object.deleteInBackground();
+                                        }
                                     }
-                                    showToast("Bạn đã giải tán nhóm "+ itemSelected);
                                 }
                             });
                         }
@@ -313,11 +319,11 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
                             list.get(0).deleteInBackground(new DeleteCallback() {
                                 @Override
                                 public void done(ParseException e) {
+                                    mapPresenter.loadGroup();
                                     showToast("Bạn đã rời nhóm "+ itemSelected);
                                 }
                             });
                         }
-                        mapPresenter.loadGroup();
                         pos = -1;
                     }
 
