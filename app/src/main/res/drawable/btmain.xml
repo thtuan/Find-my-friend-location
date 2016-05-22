@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_pressed="true">
+        <shape>
+            <gradient  android:startColor="#00e1ff"
+                android:endColor="#147eb3"
+                android:angle="270"
+                />
+            <corners android:radius="100dp"   /> //tạo bo tròn
+            <stroke android:width="0dp"></stroke>
+            // tạo đường viền // tạo màu cho viền
+            //tạo màu nền
+
+        </shape>
+
+    </item>
+    <item>            <!-- Trạng thái bình thường khi không click -->
+        <shape>
+            <!--<gradient  android:startColor="#54ebff"
+                android:endColor="#ed03556e"
+                android:angle="270"
+                />-->
+            <!-- Thiết lập màu nền cho nút -->
+
+            <stroke
+                android:width="0dp"
+                android:color="#FFFFFF" />
+
+            <corners
+                android:radius="20dp" />
+
+            <padding
+                android:left="10dp"
+                android:top="10dp"
+                android:right="10dp"
+                android:bottom="10dp" />
+            <solid android:color="#edfa7642"></solid>
+        </shape>
+    </item>
+</selector>

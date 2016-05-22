@@ -1,6 +1,8 @@
 package com.thtuan.FindFriendLocation.Class;
 
 import android.app.Application;
+import android.content.Context;
+import android.support.multidex.MultiDex;
 
 import com.parse.Parse;
 import com.parse.ParseFacebookUtils;
@@ -15,5 +17,11 @@ public class ParseInit extends Application {
         Parse.initialize(this);
         ParseFacebookUtils.initialize(this);
         FacebookSdk.sdkInitialize(this);
+    }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(base);
     }
 }

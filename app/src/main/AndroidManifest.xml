@@ -80,7 +80,8 @@
             android:name=".Activity.Maps.view.AddFriendActivity"
             android:parentActivityName=".Activity.Maps.view.MapsActivity" />
         <activity android:name=".Activity.Maps.view.ContactActivity" />
-        <activity android:name=".Activity.Maps.view.InforActivity"></activity>
+        <activity android:name=".Activity.Maps.view.InforActivity" />
+        <activity android:name=".Activity.Maps.view.ProfileActivity"></activity>
     </application>
 
 </manifest>

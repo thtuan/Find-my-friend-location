@@ -9,4 +9,6 @@
     <color name="drawerColor">#aaffb300</color>
     <color name="colorBlue">#2196F3</color>
     <color name="colorBlue300">#64B5F6</color>
+    <color name="textColorButton">#ffffff</color>
+
 </resources>

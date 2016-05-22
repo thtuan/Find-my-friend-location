@@ -4,6 +4,7 @@ import com.parse.ParseObject;
 import com.thtuan.FindFriendLocation.Activity.Maps.model.MapModelMgr;
 import com.thtuan.FindFriendLocation.Activity.Maps.view.MapMgr;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,6 +14,7 @@ public interface MapPresenterMgr {
     void setMapModel(double latitude, double longitude);
     void moveCamera(int position);
     void showInforFriend(int position);
+    void showMapData(List<ParseObject> listUser, ParseObject parseObject);
     void loadGroup();
     void loadInfor();
 }

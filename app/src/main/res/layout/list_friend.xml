@@ -1,13 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <TextView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/tvFriend"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_margin="8dp"
+    android:background="@drawable/border_item"
+    android:padding="8dp">
+    <ImageView
+        android:id="@+id/ivListFriendAvatar"
+        android:layout_width="48dp"
+        android:layout_height="48dp" />
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceListItemSmall"
-        android:gravity="center"
-        android:paddingStart="?android:attr/listPreferredItemPaddingStart"
-        android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
-        android:minHeight="?android:attr/listPreferredItemHeightSmall"
-        android:textColor="@color/colorBlue"
-        android:text="this is text"/>
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/tvFriendName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginLeft="12dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginRight="4dp"
+            android:gravity="center_vertical"
+            android:textColor="@color/colorBlue"
+            android:text="this is text"/>
+        <TextView
+            android:id="@+id/tvFriendDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginLeft="12dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginRight="4dp"
+            android:gravity="center_vertical"
+            android:textColor="@color/colorBlue"
+            android:text="this is text"/>
+
+    </LinearLayout>
+
+</LinearLayout>

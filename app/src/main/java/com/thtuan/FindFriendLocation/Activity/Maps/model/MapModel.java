@@ -27,6 +27,10 @@ public class MapModel implements MapModelMgr {
     private MapPresenterMgr mapPresenter;
     private NewGroupPresenterMgr newGroupPresenter;
     private AddFriendPresenterMgr addFriendPresenterMgr;
+
+    public MapModel() {
+    }
+
     public MapModel(MapPresenter presenter){
         this.mapPresenter = presenter;
     }

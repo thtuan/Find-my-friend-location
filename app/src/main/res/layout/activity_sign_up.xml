@@ -1,55 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".Activity.Login.LoginActivity"
-    android:orientation="vertical">
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="@dimen/activity_vertical_margin"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:paddingTop="@dimen/activity_vertical_margin"
+                tools:context=".Activity.Login.LoginActivity"
+                android:orientation="vertical"
+                android:background="@drawable/signupback">
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:id="@+id/imViewFind"
+        android:src="@drawable/friends_icon"
+        android:foregroundGravity="center"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Find My Friends"
+        android:textColor="#e68805"
+        android:textStyle="bold"
+        android:id="@+id/txtFind"
+        android:textSize="30dp"
+        android:layout_below="@+id/imViewFind"
+        android:layout_centerHorizontal="true" />
     <EditText
         android:id="@+id/etUserSignup"
         android:layout_width="match_parent"
         android:layout_height="72dp"
         android:gravity="bottom"
-        android:hint="Ten tai khoan" />
+        android:hint="Your ID"
+        android:layout_above="@+id/etPassSignup"
+        android:layout_alignParentEnd="true" />
     <EditText
         android:id="@+id/etPassSignup"
         android:layout_width="match_parent"
         android:layout_height="72dp"
-        android:hint="Mat khau"
-        android:layout_below="@id/etUserSignup"
-        android:layout_marginTop="16dp"
+        android:hint="Your Password"
         android:password="true"
-        android:gravity="bottom"/>
+        android:gravity="bottom"
+        android:layout_above="@+id/etRePassSignup"
+        android:layout_alignParentStart="true" />
     <EditText
         android:id="@+id/etRePassSignup"
         android:layout_width="match_parent"
         android:layout_height="72dp"
-        android:hint="Nhap lai mat khau"
-        android:layout_below="@id/etPassSignup"
-        android:layout_marginTop="16dp"
+        android:hint="Retype Password"
         android:password="true"
-        android:gravity="bottom"/>
+        android:gravity="bottom"
+        android:layout_above="@+id/etEmailSignup"
+        android:layout_alignParentEnd="true" />
     <EditText
         android:id="@+id/etEmailSignup"
         android:layout_width="match_parent"
         android:layout_height="72dp"
         android:hint="Email"
-        android:layout_below="@id/etRePassSignup"
-        android:layout_marginTop="16dp"
-        android:gravity="bottom"/>
+        android:gravity="bottom"
+        android:layout_above="@+id/btnSignUpSignup"
+        android:layout_alignParentEnd="true" />
+
 
     <Button
         android:id="@+id/btnSignUpSignup"
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
+        android:background="@drawable/btmain"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
         android:text="@string/signUp"
-        android:layout_below="@id/etEmailSignup"
         android:gravity="center"
+        android:textSize="20dp"
         android:textColor="@color/textColor"
-        android:textSize="26dp"
-        android:background="@color/colorLine"/>
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"  />
 </RelativeLayout>

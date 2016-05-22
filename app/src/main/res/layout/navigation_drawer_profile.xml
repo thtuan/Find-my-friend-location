@@ -47,7 +47,6 @@
         <Spinner
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/spinner"
-            style="@style/spinner"/>
+            android:id="@+id/spinner" />
     </LinearLayout>
 </LinearLayout>

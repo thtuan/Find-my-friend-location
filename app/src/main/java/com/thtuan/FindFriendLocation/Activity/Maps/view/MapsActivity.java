@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -18,8 +17,6 @@ import android.provider.Settings;
 import android.support.design.widget.NavigationView;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -30,14 +27,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -45,16 +42,18 @@ import com.thtuan.FindFriendLocation.Activity.Maps.presenter.MapPresenter;
 import com.thtuan.FindFriendLocation.Activity.Maps.presenter.MapPresenterMgr;
 import com.thtuan.FindFriendLocation.Class.ListFriendAdapter;
 import com.thtuan.FindFriendLocation.Class.MyLocation;
-import com.thtuan.FindFriendLocation.R;
 import com.thtuan.FindFriendLocation.Class.RealPathUtil;
+import com.thtuan.FindFriendLocation.Class.RoundedImageView;
+import com.thtuan.FindFriendLocation.Class.UserObject;
+import com.thtuan.FindFriendLocation.R;
 
 import java.util.List;
 
-public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapReadyCallback, GoogleMap.OnMapLoadedCallback, LocationListener {
+public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
     public static String itemSelected;
     public static Activity mContext;
     public static Context mContext1;
-    private int pos = -1;
+
     static ArrayAdapter<String> arrayAdapter;
     com.thtuan.FindFriendLocation.Class.MyLocation myLocation;
     public static LocationManager locationManager;
@@ -66,7 +65,6 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
     SharedPreferences preferences;
     String path;
     TextView tvName;
-    CountDownTimer countDownTimer;
     public static GoogleMap mMap;
     ListView lvFriend;
     MapPresenterMgr mapPresenter;
@@ -75,37 +73,25 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        myUser = ParseUser.getCurrentUser();
-        mContext = this;
-        mContext1 = this;
-        MapFragment mapFragment = (MapFragment) MapsActivity.mContext.getFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
         lvFriend = (ListView) findViewById(R.id.lvFriend);
         drawrer = (NavigationView) findViewById(R.id.navigationView);
         imgProfile = (ImageView) drawrer.getHeaderView(0).findViewById(R.id.imgProfile);
         spinner = (Spinner) drawrer.getHeaderView(0).findViewById(R.id.spinner);
         tvName = (TextView) drawrer.getHeaderView(0).findViewById(R.id.tvName);
+        myUser = ParseUser.getCurrentUser();
+        mContext = this;
+        mContext1 = this;
+        MapFragment mapFragment = (MapFragment)getFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
         tvName.setText(myUser.getUsername());
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        myLocation = new MyLocation(this, locationManager);
-        myLocation.getLocation();
-        CheckGPS(myLocation.isGpsEnable());
+        myLocation = new MyLocation(this);
         mapPresenter = new MapPresenter(this);
-        progressDialog = new ProgressDialog(MapsActivity.mContext1);
+        progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Đang tải map");
         progressDialog.setMessage("Vui lòng đợi trong giây lát");
         progressDialog.setCancelable(true);
         progressDialog.show();
-        lvFriend.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                pos = position;
-                mapPresenter.moveCamera(position);
-                mapPresenter.showInforFriend(position);
-
-            }
-        });
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -133,13 +119,13 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
                 return true;
             }
         });
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         itemSelected = (String)spinner.getItemAtPosition(0);
+        myLocation.startService();
         mapPresenter.loadGroup();
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String path = preferences.getString("pathImg", "null");
@@ -151,25 +137,18 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onStop() {
+        super.onStop();
+        myLocation.stopService();
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor edit = preferences.edit();
         edit.putString("pathImg", path);
         edit.commit();
-
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        countDownTimer.cancel();
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        countDownTimer.start();
     }
 
     @Override
@@ -178,45 +157,12 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
         googleMap.getUiSettings().setCompassEnabled(true);
         googleMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.clear();
-        countDownTimer = new CountDownTimer(10000,5000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                myLocation.getLocation();
-                mapPresenter.setMapModel(myLocation.getLatLng().latitude,myLocation.getLatLng().longitude);
-                mapPresenter.loadInfor();
-            }
-
-            @Override
-            public void onFinish() {
-                countDownTimer.start();
-            }
-        }.start();
         googleMap.setOnMapLoadedCallback(this);
         googleMap.setMyLocationEnabled(true);
     }
     @Override
     public void onMapLoaded() {
         progressDialog.dismiss();
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        //set thông tin user
-
-//        getAndSetLocation(MapsActivity.itemSelected);
-    }
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-        Toast.makeText(MapsActivity.mContext1, "enable " + provider + " provider", Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-        Toast.makeText(MapsActivity.mContext1, "disable " + provider + " provider", Toast.LENGTH_LONG).show();
     }
 
     public void selectDrawerItem(MenuItem item) {
@@ -251,11 +197,21 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 200 && resultCode == RESULT_OK) {
-//            File file = new File(RealPathUtil.getRealPathFromURI_API19(this,data.getData()));
             path = RealPathUtil.getRealPathFromURI_API19(this, data.getData());
-            Bitmap bitmap = BitmapFactory.decodeFile(path);
-//            ParseFile parseFile = new ParseFile(file);
-//            parseFile.saveInBackground();
+//            final File file = new File(path);
+            Bitmap bitmap = RoundedImageView.getCroppedBitmap(BitmapFactory.decodeFile(path),240);
+            final byte[] stream = bitmap.getNinePatchChunk();
+            ParseQuery<ParseObject> query = ParseQuery.getQuery("DataUser");
+            query.whereEqualTo("alias",tvName.getText().toString());
+            query.findInBackground(new FindCallback<ParseObject>() {
+                @Override
+                public void done(List<ParseObject> list, ParseException e) {
+                    ParseFile parseFile = new ParseFile(stream);
+                    list.get(0).put("imageUser",parseFile);
+                    list.get(0).saveInBackground();
+                }
+            });
+
             imgProfile.setImageBitmap(bitmap);
         }
     }
@@ -324,7 +280,7 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
                                 }
                             });
                         }
-                        pos = -1;
+//                        ListFriendFragment.pos = -1;
                     }
 
                 }
@@ -333,13 +289,7 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
         else
             Toast.makeText(getApplicationContext(),"Bạn chưa có nhóm",Toast.LENGTH_SHORT).show();
     }
-    @Override
-    public void showInforData(ListFriendAdapter friendAdapter) {
-        lvFriend.setAdapter(friendAdapter);
-        if (pos != -1){
-            mapPresenter.showInforFriend(pos);
-        }
-    }
+
 
     @Override
     public void showGroupData(List<String> grouplLst) {
@@ -351,6 +301,12 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
     @Override
     public void showToast(String message) {
         Toast.makeText(getApplicationContext(),message,Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showListFriend(List<UserObject> lsUser) {
+        ListFriendAdapter adapter = new ListFriendAdapter(this, lsUser);
+        lvFriend.setAdapter(adapter);
     }
 }
 
