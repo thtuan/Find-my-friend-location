@@ -36,7 +36,6 @@ public class AddFriendActivity extends AppCompatActivity implements AddFriendMgr
         user = ParseUser.getCurrentUser();
         etAdd = (EditText) findViewById(R.id.etAddfriend);
         lvAllUser = (ListView) findViewById(R.id.lvListAllUser);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         addFriendPresenterMgr.getCanAddFriendList("");
         etAdd.addTextChangedListener(new TextWatcher() {
             @Override
@@ -79,7 +78,7 @@ public class AddFriendActivity extends AppCompatActivity implements AddFriendMgr
 
     @Override
     public void showAddList(ArrayList<String> arrayList) {
-        arrayAdapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_list_item_1,arrayList);
+        arrayAdapter = new ArrayAdapter<>(getApplicationContext(),R.layout.spinner_item,arrayList);
         lvAllUser.setAdapter(arrayAdapter);
     }
 

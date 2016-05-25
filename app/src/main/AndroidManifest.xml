@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.thtuan.FindFriendLocation">
+    package="com.thtuan.FindFriendLocation" >
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -29,7 +29,7 @@
         android:icon="@drawable/laucher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light">
+        android:theme="@style/AppTheme" >
 
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -62,7 +62,7 @@
         <activity
             android:name=".Activity.Login.LoginActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -71,17 +71,22 @@
         </activity>
         <activity
             android:name=".Activity.Login.SignUpActivity"
-            android:label="Đăng kí" />
+            android:label="Đăng kí"
+            android:theme="@style/Theme.AppCompat.Light.Dialog" />
         <activity android:name="com.facebook.FacebookActivity" />
         <activity
             android:name=".Activity.Maps.view.NewGroupActivity"
-            android:label="Tạo nhóm" />
+            android:label="Tạo nhóm"
+            android:parentActivityName=".Activity.Maps.view.MapsActivity"
+            android:theme="@style/Theme.AppCompat.Light.Dialog" />
         <activity
             android:name=".Activity.Maps.view.AddFriendActivity"
-            android:parentActivityName=".Activity.Maps.view.MapsActivity" />
+            android:label="Mời bạn bè"
+            android:parentActivityName=".Activity.Maps.view.MapsActivity"
+            android:theme="@style/Theme.AppCompat.Light.Dialog" />
         <activity android:name=".Activity.Maps.view.ContactActivity" />
         <activity android:name=".Activity.Maps.view.InforActivity" />
-        <activity android:name=".Activity.Maps.view.ProfileActivity"></activity>
+        <activity android:name=".Activity.Maps.view.ProfileActivity" />
     </application>
 
 </manifest>

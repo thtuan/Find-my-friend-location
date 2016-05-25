@@ -14,6 +14,7 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.maps.model.LatLng;
 import com.thtuan.FindFriendLocation.Activity.Maps.presenter.MapPresenter;
 import com.thtuan.FindFriendLocation.Activity.Maps.presenter.MapPresenterMgr;
+import com.thtuan.FindFriendLocation.Activity.Maps.view.MapsActivity;
 
 /**
  * Created by ThanhTuan on 03-03-2016.
@@ -79,14 +80,19 @@ public class MyLocation implements GoogleApiClient.ConnectionCallbacks, GoogleAp
     public void startService(){
         mGoogleApiClient.connect();
     }
+
     public void stopService(){
-        mGoogleApiClient.disconnect();
-        stopLocationUpdates();
+        if (mGoogleApiClient.isConnected()){
+            stopLocationUpdates();
+            mGoogleApiClient.disconnect();
+        }
+
+
     }
     public void createLocationRequest(){
         locationRequest = new LocationRequest();
         locationRequest.setInterval(10000);
-        locationRequest.setFastestInterval(5000);
+        locationRequest.setFastestInterval(10000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder().addLocationRequest
                 (locationRequest);
@@ -102,7 +108,7 @@ public class MyLocation implements GoogleApiClient.ConnectionCallbacks, GoogleAp
     }
     @Override
     public void onLocationChanged(Location location) {
-        latLng = new LatLng(location.getLatitude(),location.getLongitude());
         mapPresenterMgr.setMapModel(location.getLatitude(),location.getLongitude());
+        MapsActivity.mapPresenter.loadInfor();
     }
 }

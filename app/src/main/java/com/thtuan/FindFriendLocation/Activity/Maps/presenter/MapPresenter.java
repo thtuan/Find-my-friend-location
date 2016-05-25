@@ -1,8 +1,13 @@
 package com.thtuan.FindFriendLocation.Activity.Maps.presenter;
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -22,6 +27,7 @@ import com.thtuan.FindFriendLocation.Activity.Maps.view.MapMgr;
 import com.thtuan.FindFriendLocation.Activity.Maps.view.MapsActivity;
 import com.thtuan.FindFriendLocation.Class.RoundedImageView;
 import com.thtuan.FindFriendLocation.Class.UserObject;
+import com.thtuan.FindFriendLocation.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,18 +42,33 @@ public class MapPresenter implements MapPresenterMgr {
     private LatLng latLng;
     private ArrayList<LatLng> latLngs;
     private ArrayList<String> lstGroup;
-    private ArrayList<Marker> lsMarker;
+    private Marker marker;
     private List<UserObject> lsUserObject;
-    private int lastChangeUser = 0;
 
+    private double lastLat =0;
+    private double lastLong = 0;
+    private int sizeUser;
+    private boolean isClickedMarker;
+    private boolean isDataStream;
+    private AsyncTask updateMap;
+    private ProgressDialog progressDialog;
     public MapPresenter() {
         this.mapModelMgr = new MapModel(this);
+        sizeUser = 0;
+        lsUserObject = new ArrayList<>();
+        isClickedMarker = false;
+        latLngs = new ArrayList<>();
+        isDataStream = false;
     }
 
     public MapPresenter(MapMgr mapMgr) {
         this.mapMgr = mapMgr;
         this.mapModelMgr = new MapModel(this);
-
+        lsUserObject = new ArrayList<>();
+        sizeUser = 0;
+        isClickedMarker = false;
+        latLngs = new ArrayList<>();
+        isDataStream = false;
     }
 
     @Override
@@ -56,8 +77,9 @@ public class MapPresenter implements MapPresenterMgr {
     }
 
     @Override
-    public void showInforFriend(int position) {
-        lsMarker.get(position).showInfoWindow();
+    public void showInforFriend(Marker marker) {
+        marker.showInfoWindow();
+        isClickedMarker = true;
     }
 
     @Override
@@ -78,6 +100,7 @@ public class MapPresenter implements MapPresenterMgr {
                             lstGroup.add(obj.getString("groupName"));
                         }
                         mapMgr.showGroupData(lstGroup);
+                        showListFriend();
                     }
                     else{
 
@@ -93,100 +116,129 @@ public class MapPresenter implements MapPresenterMgr {
 
     @Override
     public void loadInfor() {
+        if(!lsUserObject.isEmpty()){
+            ParseQuery<ParseObject> parseQuery = ParseQuery.getQuery("GroupData");
+            parseQuery.whereEqualTo("groupName",MapsActivity.itemSelected).whereExists("captainGroup");
+            parseQuery.findInBackground(new FindCallback<ParseObject>() {
+                @Override
+                public void done(List<ParseObject> list, ParseException e) {
+                    if (e == null){
+                        if (!list.isEmpty()){
+                            showMapData(lsUserObject,list.get(0));
+                        }
+                    }
+
+                }
+            });
+        }
+        /*else {
+            mapMgr.showToast("Không có thành viên trong nhóm");
+        }*/
+    }
+
+    @Override
+    public void showMapData(final List<UserObject> listUser,final ParseObject parseObject) {
+        mapModelMgr.loadInfor(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> objects, ParseException e) {
+                if (e == null){
+                    if (!objects.isEmpty()){
+                        if(isDataStream){
+                            MapsActivity.mMap.clear();
+                            for (int i = 0; i < objects.size(); i++){
+                                ParseObject obj = objects.get(i);
+                                View marker = ((LayoutInflater) MapsActivity.mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+                                        .inflate(R.layout
+                                                .custom_marker, null);
+                                ImageView imageView = (ImageView) marker.findViewById(R.id.ivMarker);
+                                imageView.setImageBitmap(listUser.get(i).getAvatar());
+                                geoPoint = obj.getParseGeoPoint("location");
+                                latLng = new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
+                                if (listUser.get(i).getName().equals(parseObject.getString("captainGroup"))) {
+                                    MarkerOptions captain = new MarkerOptions()
+                                            .position(latLng)
+                                            .title(listUser.get(i).getName() + "(Đội trưởng)")
+                                            .icon(BitmapDescriptorFactory.fromBitmap(RoundedImageView.createDrawableFromView
+                                                    (MapsActivity.mContext1,marker)))
+                                            .snippet("Cập nhật lúc: "+obj.getString("update"))
+                                            .anchor(0.5f,1);
+                                    MapsActivity.mMap.addMarker(captain);
+                                }
+                                else {
+                                    MapsActivity.mMap.addMarker(new MarkerOptions()
+                                            .position(latLng)
+                                            .title(listUser.get(i).getName())
+                                            .icon(BitmapDescriptorFactory.fromBitmap(RoundedImageView.createDrawableFromView
+                                                    (MapsActivity.mContext1,marker)))
+                                            .snippet("Cập nhật lúc: "+obj.getString("update"))
+                                            .anchor(0.5f,1));
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+        });
+
+
+
+    }
+
+    @Override
+    public void showListFriend() {
         mapModelMgr.loadInfor(new FindCallback<ParseObject>() {
             @Override
             public void done(final List<ParseObject> listUser, ParseException e) {
-                if(e == null){
-                    if(!listUser.isEmpty()){
-
-                        ParseQuery<ParseObject> parseQuery = ParseQuery.getQuery("GroupData");
-                        parseQuery.whereEqualTo("groupName",MapsActivity.itemSelected).whereExists("captainGroup");
-                        parseQuery.findInBackground(new FindCallback<ParseObject>() {
+                if (e == null) {
+                    if (!listUser.isEmpty()) {
+                        updateMap = new AsyncTask<List<ParseObject>, Void, List<UserObject>>(){
                             @Override
-                            public void done(List<ParseObject> list, ParseException e) {
-                                if (e == null){
-                                    if (!list.isEmpty()){
-                                        showMapData(listUser,list.get(0));
+                            protected void onPreExecute() {
+                                super.onPreExecute();
+
+                                isDataStream = false;
+                            }
+                            @Override
+                            protected List<UserObject> doInBackground(List<ParseObject>... params) {
+                                lsUserObject = new ArrayList<>();
+                                for (int i=0; i < params[0].size(); i++){
+                                    ParseObject obj = params[0].get(i);
+                                    UserObject user = new UserObject();
+                                    user.setName(obj.getString("alias"));
+                                    geoPoint = obj.getParseGeoPoint("location");
+                                    latLng = new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
+                                    user.setLocation(latLng);
+                                    try {
+                                        Bitmap bitmap = RoundedImageView.getCroppedBitmap
+                                                (BitmapFactory.decodeStream(obj.getParseFile("imageUser").getDataStream()), 80);
+                                        user.setAvatar(bitmap);
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
                                     }
+                                    user.setPhone(obj.getString("phone"));
+                                    user.setLastUpdate(obj.getString("update"));
+                                    lsUserObject.add(user);
+                                }
+                                return lsUserObject;
+                            }
+                            @Override
+                            protected void onPostExecute(List<UserObject> userObjects) {
+                                super.onPostExecute(userObjects);
+                                if (userObjects.size() != sizeUser){
+                                    isDataStream = true;
+                                    sizeUser = userObjects.size();
+                                    mapMgr.showListFriend(lsUserObject);
+                                    loadInfor();
                                 }
 
                             }
-                        });
+                        }.execute(listUser);
                     }
-                    else {
-                        mapMgr.showToast("Không có thành viên trong nhóm");
-                    }
-                }
-                else {
-                    mapMgr.showToast(e.getMessage());
                 }
             }
         });
     }
 
-    @Override
-    public void showMapData(final List<ParseObject> listUser,final ParseObject parseObject) {
-        lsMarker = new ArrayList<>();
-        latLngs = new ArrayList<>();
-        new AsyncTask<List<ParseObject>, UserObject, List<UserObject>>() {
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                lsUserObject = new ArrayList<UserObject>();
-                MapsActivity.mMap.clear();
-            }
-
-            @Override
-            protected void onProgressUpdate(UserObject... values) {
-                super.onProgressUpdate(values);
-                if (values[0].getName().equals(parseObject.getString("captainGroup"))) {
-
-                    lsMarker.add(MapsActivity.mMap.addMarker(new MarkerOptions()
-                            .position(latLng)
-                            .title(values[0].getName() + "(Đội trưởng)")
-                            .icon(BitmapDescriptorFactory.fromBitmap(values[0].getAvatar()))
-                            .snippet(values[0].getLastUpdate())));
-                }
-                else {
-                    lsMarker.add(MapsActivity.mMap.addMarker(new MarkerOptions()
-                            .position(latLng)
-                            .title(values[0].getName())
-                            .icon(BitmapDescriptorFactory.fromBitmap(values[0].getAvatar()))
-                            .snippet(values[0].getLastUpdate())));
-                }
-            }
-
-            @Override
-            protected List<UserObject> doInBackground(List<ParseObject>... params) {
-                for (ParseObject obj : params[0]){
-                    UserObject user = new UserObject();
-                    user.setName(obj.getString("alias"));
-                    geoPoint = obj.getParseGeoPoint("location");
-                    latLng = new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
-                    user.setLocation(latLng);
-                    try {
-                        Bitmap bitmap = RoundedImageView.getCroppedBitmap
-                                (BitmapFactory.decodeStream(obj.getParseFile("imageUser").getDataStream()), 80);
-                        user.setAvatar(bitmap);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    user.setPhone(obj.getString("phone"));
-                    user.setLastUpdate(obj.getString("updateAt"));
-                    lsUserObject.add(user);
-                    publishProgress(user);
-                }
-                return lsUserObject;
-            }
-
-            @Override
-            protected void onPostExecute(List<UserObject> userObjects) {
-                super.onPostExecute(userObjects);
-                mapMgr.showListFriend(userObjects);
-            }
-
-        }.execute(listUser);
-
-    }
 }

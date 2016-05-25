@@ -1,5 +1,6 @@
 package com.thtuan.FindFriendLocation.Activity.Maps.model;
 
+import android.text.format.Time;
 import android.util.Log;
 import android.widget.Toast;
 import com.parse.FindCallback;
@@ -17,6 +18,8 @@ import com.thtuan.FindFriendLocation.Activity.Maps.presenter.NewGroupPresenter;
 import com.thtuan.FindFriendLocation.Activity.Maps.presenter.NewGroupPresenterMgr;
 import com.thtuan.FindFriendLocation.Activity.Maps.view.MapsActivity;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -108,6 +111,8 @@ public class MapModel implements MapModelMgr {
             @Override
             public void done(List<ParseObject> list, ParseException e) {
                 if (e == null) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy");
+                    String currentDateandTime = sdf.format(new Date());
                     ParseGeoPoint geoPoint = new ParseGeoPoint(latitude,longitude);
                     if (list.size() == 0) {
                         ParseObject object = new ParseObject("DataUser");
@@ -118,6 +123,7 @@ public class MapModel implements MapModelMgr {
                     }
                     else {
                         list.get(0).put("location",geoPoint);
+                        list.get(0).put("update",currentDateandTime);
                         list.get(0).saveInBackground();
                     }
                 } else {

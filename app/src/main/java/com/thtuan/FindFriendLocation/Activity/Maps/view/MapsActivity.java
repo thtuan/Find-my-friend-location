@@ -2,18 +2,19 @@ package com.thtuan.FindFriendLocation.Activity.Maps.view;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -27,10 +28,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.Marker;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -38,6 +39,7 @@ import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 import com.thtuan.FindFriendLocation.Activity.Maps.presenter.MapPresenter;
 import com.thtuan.FindFriendLocation.Activity.Maps.presenter.MapPresenterMgr;
 import com.thtuan.FindFriendLocation.Class.ListFriendAdapter;
@@ -47,16 +49,19 @@ import com.thtuan.FindFriendLocation.Class.RoundedImageView;
 import com.thtuan.FindFriendLocation.Class.UserObject;
 import com.thtuan.FindFriendLocation.R;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.List;
 
-public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapReadyCallback, GoogleMap.OnMapLoadedCallback {
+public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapReadyCallback, GoogleMap
+        .OnMapLoadedCallback, GoogleMap.OnMarkerClickListener {
     public static String itemSelected;
     public static Activity mContext;
     public static Context mContext1;
-
+    private ListFriendAdapter adapter;
     static ArrayAdapter<String> arrayAdapter;
     com.thtuan.FindFriendLocation.Class.MyLocation myLocation;
-    public static LocationManager locationManager;
     public static ParseUser myUser;
     ParseQuery<ParseObject> queryObject;
     NavigationView drawrer;
@@ -64,10 +69,10 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
     ImageView imgProfile;
     SharedPreferences preferences;
     String path;
-    TextView tvName;
+    TextView tvName, tvRefreshList;
     public static GoogleMap mMap;
     ListView lvFriend;
-    MapPresenterMgr mapPresenter;
+    public static MapPresenterMgr mapPresenter;
     private ProgressDialog progressDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +83,13 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
         imgProfile = (ImageView) drawrer.getHeaderView(0).findViewById(R.id.imgProfile);
         spinner = (Spinner) drawrer.getHeaderView(0).findViewById(R.id.spinner);
         tvName = (TextView) drawrer.getHeaderView(0).findViewById(R.id.tvName);
+        tvRefreshList = (TextView) findViewById(R.id.tvRefreshList);
+        tvRefreshList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mapPresenter.showListFriend();
+            }
+        });
         myUser = ParseUser.getCurrentUser();
         mContext = this;
         mContext1 = this;
@@ -85,8 +97,8 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         tvName.setText(myUser.getUsername());
-        myLocation = new MyLocation(this);
         mapPresenter = new MapPresenter(this);
+        myLocation = new MyLocation(this);
         progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Đang tải map");
         progressDialog.setMessage("Vui lòng đợi trong giây lát");
@@ -96,9 +108,8 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 itemSelected = (String)spinner.getItemAtPosition(position);
-                mapPresenter.loadInfor();
+                mapPresenter.showListFriend();
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
 
@@ -107,6 +118,8 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
         imgProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /*Intent intent = new Intent(MapsActivity.this,ProfileActivity.class);
+                startActivity(intent);*/
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.setType("image/*");
                 startActivityForResult(intent, 200);
@@ -131,15 +144,20 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
         String path = preferences.getString("pathImg", "null");
         if (path.equals("null")) {
         } else {
-            Bitmap bitmap = BitmapFactory.decodeFile(path);
+            Bitmap bitmap = RoundedImageView.getCroppedBitmap(BitmapFactory.decodeFile(path),240);
             imgProfile.setImageBitmap(bitmap);
         }
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        myLocation.stopService();
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
-        myLocation.stopService();
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor edit = preferences.edit();
         edit.putString("pathImg", path);
@@ -159,6 +177,7 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
         mMap.clear();
         googleMap.setOnMapLoadedCallback(this);
         googleMap.setMyLocationEnabled(true);
+        googleMap.setOnMarkerClickListener(this);
     }
     @Override
     public void onMapLoaded() {
@@ -197,22 +216,30 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 200 && resultCode == RESULT_OK) {
-            path = RealPathUtil.getRealPathFromURI_API19(this, data.getData());
-//            final File file = new File(path);
+            path = RealPathUtil.getRealPathFromURI(data.getData(),this);
             Bitmap bitmap = RoundedImageView.getCroppedBitmap(BitmapFactory.decodeFile(path),240);
-            final byte[] stream = bitmap.getNinePatchChunk();
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            final byte[] byteArray = stream.toByteArray();
             ParseQuery<ParseObject> query = ParseQuery.getQuery("DataUser");
             query.whereEqualTo("alias",tvName.getText().toString());
             query.findInBackground(new FindCallback<ParseObject>() {
                 @Override
                 public void done(List<ParseObject> list, ParseException e) {
-                    ParseFile parseFile = new ParseFile(stream);
+                    ParseFile parseFile = new ParseFile(byteArray);
                     list.get(0).put("imageUser",parseFile);
-                    list.get(0).saveInBackground();
+                    list.get(0).saveInBackground(new SaveCallback() {
+                        @Override
+                        public void done(ParseException e) {
+                            showToast("done");
+                            mapPresenter.showListFriend();
+                        }
+                    });
                 }
             });
 
             imgProfile.setImageBitmap(bitmap);
+
         }
     }
 
@@ -305,8 +332,14 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
 
     @Override
     public void showListFriend(List<UserObject> lsUser) {
-        ListFriendAdapter adapter = new ListFriendAdapter(this, lsUser);
+        adapter = new ListFriendAdapter(this, lsUser);
         lvFriend.setAdapter(adapter);
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        mapPresenter.showInforFriend(marker);
+        return true;
     }
 }
 
