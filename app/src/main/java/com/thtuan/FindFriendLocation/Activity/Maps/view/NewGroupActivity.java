@@ -2,7 +2,9 @@ package com.thtuan.FindFriendLocation.Activity.Maps.view;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -23,7 +25,7 @@ import com.thtuan.FindFriendLocation.R;
 
 import java.util.List;
 
-public class NewGroupActivity extends Activity implements NewGroupMgr{
+public class NewGroupActivity extends AppCompatActivity implements NewGroupMgr{
 
     EditText nameGroup;
     Button newGroup;
@@ -35,6 +37,7 @@ public class NewGroupActivity extends Activity implements NewGroupMgr{
         nameGroup = (EditText) findViewById(R.id.etGroupName);
         newGroup = (Button) findViewById(R.id.btnNewGroup);
         newGroupPresenterMgr = new NewGroupPresenter(this);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         newGroup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -46,5 +49,21 @@ public class NewGroupActivity extends Activity implements NewGroupMgr{
     @Override
     public void showNotifycation(String notice) {
         Toast.makeText(getApplicationContext(), notice, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onSuccess() {
+        setResult(RESULT_OK);
+        finish();
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

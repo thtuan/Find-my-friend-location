@@ -1,15 +1,15 @@
 package com.thtuan.FindFriendLocation.Activity.Maps.view;
 
 import android.os.Bundle;
-import android.support.design.widget.BottomSheetDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
+import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.datetimepicker.date.DatePickerDialog;
 import com.android.datetimepicker.time.RadialPickerLayout;
 import com.android.datetimepicker.time.TimePickerDialog;
+import com.thtuan.FindFriendLocation.Class.UserObject;
 import com.thtuan.FindFriendLocation.R;
 
 import java.text.DateFormat;
@@ -19,34 +19,35 @@ import java.util.Locale;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
-public class ProfileActivity extends AppCompatActivity implements View.OnClickListener, TimePickerDialog
+public class ProfileActivity extends AppCompatActivity implements TimePickerDialog
         .OnTimeSetListener, DatePickerDialog.OnDateSetListener {
 
     @Bind(R.id.ivProfile)
     ImageView ivProfile;
-    @Bind(R.id.etProfileName)
-    TextView etProfileName;
+    @Bind(R.id.tvProfileName)
+    TextView tvProfileName;
     @Bind(R.id.tvSex)
     TextView tvSex;
     @Bind(R.id.tvBirthday)
     TextView tvBirthday;
-    @Bind(R.id.etProfileAddr)
-    TextView etProfileAddr;
-    @Bind(R.id.etProfileEmail)
-    TextView etProfileEmail;
-    @Bind(R.id.etProfileDetail)
-    TextView etProfileDetail;
+    @Bind(R.id.tvProfileAddr)
+    TextView tvProfileAddr;
+    @Bind(R.id.tvProfileEmail)
+    TextView tvProfileEmail;
+    @Bind(R.id.tvProfileDetail)
+    TextView tvProfileDetail;
     @Bind(R.id.tvSave)
     TextView tvSave;
     @Bind(R.id.tvRevert)
     TextView tvRevert;
+    @Bind(R.id.tvProfilePhone)
+    TextView tvProfilePhone;
     private Calendar calendar;
     private DateFormat dateFormat;
     private SimpleDateFormat timeFormat;
     private static final String TIME_PATTERN = "HH:mm"; // dinh dạng giờ
-
+    private UserObject user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +55,19 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         setContentView(R.layout.activity_profile);
         ButterKnife.bind(this);
         calendar = Calendar.getInstance();
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         dateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.getDefault());
         timeFormat = new SimpleDateFormat(TIME_PATTERN, Locale.getDefault());
+        user = getIntent().getParcelableExtra("data");
+
+        ivProfile.setImageBitmap(user.getAvatar());
+        tvProfileName.setText(user.getName());
+        tvSex.setText(user.getCharacter());
+        tvBirthday.setText(user.getBirthday());
+        tvProfileAddr.setText(user.getAddr());
+        tvProfileEmail.setText(user.getEmail());
+        tvProfileDetail.setText(user.getContact());
+        tvProfilePhone.setText(user.getPhone());
     }
 
     /**
@@ -81,30 +93,15 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         update();
     }
 
-    @OnClick({R.id.ivProfile, R.id.etProfileName, R.id.tvSex, R.id.tvBirthday, R.id.etProfileAddr, R.id.etProfileEmail, R.id.etProfileDetail, R.id.tvSave})
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.ivProfile:
-
-                break;
-            case R.id.etProfileName:
-                BottomSheetDialog dialog = new BottomSheetDialog(this);
-                dialog.setTitle("Sửa tên");
-                dialog.setContentView(R.layout.activity_new_group);
-                break;
-            case R.id.tvSex:
-                break;
-            case R.id.tvBirthday:
-                DatePickerDialog.newInstance(this, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show(getFragmentManager(), "datePicker");
-                break;
-            case R.id.etProfileAddr:
-                break;
-            case R.id.etProfileEmail:
-                break;
-            case R.id.etProfileDetail:
-                break;
-            case R.id.tvSave:
-                break;
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                finish();
+                return true;
         }
+        return super.onOptionsItemSelected(item);
     }
+
 }

@@ -13,10 +13,11 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_weight="1">
         <TextView
             android:id="@+id/tvFriendName"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16dp"
             android:layout_marginTop="4dp"
@@ -24,11 +25,12 @@
             android:layout_marginBottom="4dp"
             android:layout_marginRight="4dp"
             android:gravity="center_vertical"
-            android:textColor="@color/colorBlue"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
             android:text="this is text"/>
         <TextView
             android:id="@+id/tvFriendDetail"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="12dp"
             android:layout_marginTop="4dp"
@@ -36,9 +38,19 @@
             android:layout_marginBottom="4dp"
             android:layout_marginRight="4dp"
             android:gravity="center_vertical"
-            android:textColor="@color/colorBlue"
             android:text="this is text"/>
 
+
     </LinearLayout>
+    <RelativeLayout
+        android:layout_width="100dp"
+        android:layout_height="match_parent">
+        <TextView
+            android:id="@+id/tvFriendUpdate"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="update"
+            android:gravity="center"/>
+    </RelativeLayout>
 
 </LinearLayout>

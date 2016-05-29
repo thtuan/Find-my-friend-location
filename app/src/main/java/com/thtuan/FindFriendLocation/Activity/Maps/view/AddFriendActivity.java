@@ -37,6 +37,7 @@ public class AddFriendActivity extends AppCompatActivity implements AddFriendMgr
         etAdd = (EditText) findViewById(R.id.etAddfriend);
         lvAllUser = (ListView) findViewById(R.id.lvListAllUser);
         addFriendPresenterMgr.getCanAddFriendList("");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         etAdd.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -62,23 +63,13 @@ public class AddFriendActivity extends AppCompatActivity implements AddFriendMgr
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(this);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void showToast(String message) {
         Toast.makeText(AddFriendActivity.this, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void showAddList(ArrayList<String> arrayList) {
-        arrayAdapter = new ArrayAdapter<>(getApplicationContext(),R.layout.spinner_item,arrayList);
+        arrayAdapter = new ArrayAdapter<>(getApplicationContext(),R.layout.item_list_friend,R.id.tvListFriend,arrayList);
         lvAllUser.setAdapter(arrayAdapter);
     }
 
@@ -91,4 +82,15 @@ public class AddFriendActivity extends AppCompatActivity implements AddFriendMgr
     public void removeAtPostion(int position) {
         arrayAdapter.remove(arrayAdapter.getItem(position));
     }
+
+    /*@Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }*/
 }

@@ -5,4 +5,5 @@ package com.thtuan.FindFriendLocation.Activity.Maps.view;
  */
 public interface NewGroupMgr {
     void showNotifycation(String notice);
+    void onSuccess();
 }

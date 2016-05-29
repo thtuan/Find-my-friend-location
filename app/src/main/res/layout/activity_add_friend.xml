@@ -11,14 +11,7 @@
         android:id="@+id/etAddfriend"
         android:textSize="26dp"
         android:hint="Nhap ten ban can tim kiem" />
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:id="@+id/btnAddfriend"
-        android:textSize="26dp"
-        android:background="@color/colorBlue"
-        android:textColor="@color/textColor"
-        android:text="Thêm bạn bè"/>
+
     <ListView
         android:id="@+id/lvListAllUser"
         android:layout_width="match_parent"

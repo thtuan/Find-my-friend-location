@@ -15,6 +15,7 @@ import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 import com.thtuan.FindFriendLocation.Activity.Maps.view.MapsActivity;
 import com.thtuan.FindFriendLocation.R;
 import org.json.JSONException;
@@ -81,8 +82,13 @@ public class LoginActivity extends AppCompatActivity {
                             if (parseUser == null) {
                                 //Log.d("MyApp", "Uh oh. The user cancelled the Facebook login.");
                             } else if (parseUser.isNew()) {
-                                saveUser();
-                                Login();
+                                saveUser(new SaveCallback() {
+                                    @Override
+                                    public void done(ParseException e) {
+                                        Login();
+                                    }
+                                });
+
                                 //Log.d("MyApp", "User signed up and logged in through Facebook!");
                             } else {
                                 //Log.d("MyApp", "User logged in through Facebook!");
@@ -96,7 +102,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-    public void saveUser(){
+    public void saveUser(final SaveCallback saveCallback){
         GraphRequest request = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
             @Override
             public void onCompleted(JSONObject object, GraphResponse response) {
@@ -104,7 +110,7 @@ public class LoginActivity extends AppCompatActivity {
                     ParseUser user = ParseUser.getCurrentUser();
                     user.setUsername(object.getString("name"));
                     user.setEmail(object.getString("email"));
-                    user.saveInBackground();
+                    user.saveInBackground(saveCallback);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

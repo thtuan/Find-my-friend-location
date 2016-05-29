@@ -7,9 +7,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -42,6 +44,7 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.thtuan.FindFriendLocation.Activity.Maps.presenter.MapPresenter;
 import com.thtuan.FindFriendLocation.Activity.Maps.presenter.MapPresenterMgr;
+import com.thtuan.FindFriendLocation.Class.Constants;
 import com.thtuan.FindFriendLocation.Class.ListFriendAdapter;
 import com.thtuan.FindFriendLocation.Class.MyLocation;
 import com.thtuan.FindFriendLocation.Class.RealPathUtil;
@@ -74,6 +77,7 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
     ListView lvFriend;
     public static MapPresenterMgr mapPresenter;
     private ProgressDialog progressDialog;
+    private List<UserObject> listUser;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +94,8 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
                 mapPresenter.showListFriend();
             }
         });
+        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        CheckGPS(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER));
         myUser = ParseUser.getCurrentUser();
         mContext = this;
         mContext1 = this;
@@ -118,11 +124,9 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
         imgProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*Intent intent = new Intent(MapsActivity.this,ProfileActivity.class);
-                startActivity(intent);*/
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/*");
-                startActivityForResult(intent, 200);
+                Intent intent = new Intent(MapsActivity.this,EditProfile.class);
+                intent.putExtra("data",myUser.getUsername());
+                startActivityForResult(intent,Constants.REQUEST_EDIT_PROFILE);
             }
         });
         drawrer.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -132,14 +136,27 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
                 return true;
             }
         });
+        lvFriend.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if(position == lvFriend.getAdapter().getCount()-1){
+                    Intent intentadd = new Intent(MapsActivity.this, AddFriendActivity.class);
+                    startActivity(intentadd);
+                }
+                else {
+                    Intent profileIntent = new Intent(MapsActivity.this, ProfileActivity.class);
+                    profileIntent.putExtra("data", listUser.get(position));
+                    startActivity(profileIntent);
+                }
+            }
+        });
+        mapPresenter.loadGroup();
     }
-
     @Override
     protected void onResume() {
         super.onResume();
         itemSelected = (String)spinner.getItemAtPosition(0);
         myLocation.startService();
-        mapPresenter.loadGroup();
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String path = preferences.getString("pathImg", "null");
         if (path.equals("null")) {
@@ -167,6 +184,7 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
     @Override
     protected void onRestart() {
         super.onRestart();
+//        mapPresenter.showListFriend();
     }
 
     @Override
@@ -188,11 +206,11 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
         switch (item.getItemId()) {
             case R.id.newgroup:
                 Intent intent = new Intent(MapsActivity.this, NewGroupActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent,Constants.REQUEST_NEW_GROUP);
                 break;
             case R.id.entergroup:
                 Intent intentadd = new Intent(MapsActivity.this, AddFriendActivity.class);
-                startActivity(intentadd);
+                startActivityForResult(intentadd,Constants.REQUEST_NEW_FRIEND);
                 break;
             case R.id.Logout:
                 ParseUser.logOut();
@@ -215,31 +233,66 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 200 && resultCode == RESULT_OK) {
-            path = RealPathUtil.getRealPathFromURI(data.getData(),this);
-            Bitmap bitmap = RoundedImageView.getCroppedBitmap(BitmapFactory.decodeFile(path),240);
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            final byte[] byteArray = stream.toByteArray();
-            ParseQuery<ParseObject> query = ParseQuery.getQuery("DataUser");
-            query.whereEqualTo("alias",tvName.getText().toString());
-            query.findInBackground(new FindCallback<ParseObject>() {
-                @Override
-                public void done(List<ParseObject> list, ParseException e) {
-                    ParseFile parseFile = new ParseFile(byteArray);
-                    list.get(0).put("imageUser",parseFile);
-                    list.get(0).saveInBackground(new SaveCallback() {
-                        @Override
-                        public void done(ParseException e) {
-                            showToast("done");
-                            mapPresenter.showListFriend();
-                        }
-                    });
-                }
-            });
+        if (requestCode == Constants.REQUEST_EDIT_PROFILE && resultCode == RESULT_OK) {
+            final UserObject userObject = data.getParcelableExtra("data");
+            path = data.getStringExtra("stringpath");
+            Bitmap bitmap = userObject.getAvatar();
+            if (bitmap!=null){
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                final byte[] byteArray = stream.toByteArray();
+                ParseQuery<ParseObject> query = ParseQuery.getQuery("DataUser");
+                query.whereEqualTo("alias",tvName.getText().toString());
+                query.findInBackground(new FindCallback<ParseObject>() {
+                    @Override
+                    public void done(List<ParseObject> list, ParseException e) {
+                        ParseFile parseFile = new ParseFile(byteArray);
+                        list.get(0).put("imageUser",parseFile);
+                        list.get(0).put("detail",userObject.getContact());
+                        list.get(0).put("sex",userObject.getCharacter());
+                        list.get(0).put("birthday",userObject.getBirthday());
+                        list.get(0).put("phone",userObject.getPhone());
+                        list.get(0).put("address",userObject.getAddr());
+                        list.get(0).put("email",userObject.getEmail());
+                        list.get(0).saveInBackground(new SaveCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                showToast("lưu thành công");
+                                mapPresenter.showListFriend();
+                            }
+                        });
+                    }
+                });
 
-            imgProfile.setImageBitmap(bitmap);
+                imgProfile.setImageBitmap(bitmap);
+            }
+            else {
+                ParseQuery<ParseObject> query = ParseQuery.getQuery("DataUser");
+                query.whereEqualTo("alias",tvName.getText().toString());
+                query.findInBackground(new FindCallback<ParseObject>() {
+                    @Override
+                    public void done(List<ParseObject> list, ParseException e) {
+                        list.get(0).put("detail",userObject.getContact());
+                        list.get(0).put("sex",userObject.getCharacter());
+                        list.get(0).put("birthday",userObject.getBirthday());
+                        list.get(0).put("phone",userObject.getPhone());
+                        list.get(0).put("address",userObject.getAddr());
+                        list.get(0).put("email",userObject.getEmail());
+                        list.get(0).saveInBackground(new SaveCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                showToast("lưu thành công");
+                                mapPresenter.showListFriend();
+                            }
+                        });
+                    }
+                });
 
+            }
+
+        }
+        if(requestCode == Constants.REQUEST_NEW_GROUP && resultCode == RESULT_OK){
+            mapPresenter.loadGroup();
         }
     }
 
@@ -274,39 +327,45 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
                 @Override
                 public void done(final List<ParseObject> list, ParseException e) {
                     if(e == null){
-                        if(list.get(0).getString("alias").equals(myUser.getUsername())){
-                            ParseQuery<ParseObject> queryObject1 = ParseQuery.getQuery("GroupData");
-                            queryObject1.whereEqualTo("groupName",itemSelected);
-                            queryObject1.findInBackground(new FindCallback<ParseObject>() {
-                                @Override
-                                public void done(List<ParseObject> list1, ParseException e) {
-                                    for(int i = 0; i < list1.size(); i++){
-                                        ParseObject object = list1.get(i);
-                                        if(i == list1.size()-1){
-                                            object.deleteInBackground(new DeleteCallback() {
-                                                @Override
-                                                public void done(ParseException e) {
-                                                    mapPresenter.loadGroup();
-                                                    showToast("Bạn đã giải tán nhóm "+ itemSelected);
-                                                }
-                                            });
-                                        }
-                                        else {
-                                            object.deleteInBackground();
+                        if (!list.isEmpty()){
+                            if(list.get(0).getString("alias").equals(myUser.getUsername())){
+                                ParseQuery<ParseObject> queryObject1 = ParseQuery.getQuery("GroupData");
+                                queryObject1.whereEqualTo("groupName",itemSelected);
+                                queryObject1.findInBackground(new FindCallback<ParseObject>() {
+                                    @Override
+                                    public void done(List<ParseObject> list1, ParseException e) {
+                                        for(int i = 0; i < list1.size(); i++){
+                                            ParseObject object = list1.get(i);
+                                            if(i == list1.size()-1){
+                                                object.deleteInBackground(new DeleteCallback() {
+                                                    @Override
+                                                    public void done(ParseException e) {
+                                                        mapPresenter.loadGroup();
+                                                        showToast("Bạn đã giải tán nhóm "+ itemSelected);
+                                                    }
+                                                });
+                                            }
+                                            else {
+                                                object.deleteInBackground();
+                                            }
                                         }
                                     }
-                                }
-                            });
+                                });
+                            }
+                            else {
+                                list.get(0).deleteInBackground(new DeleteCallback() {
+                                    @Override
+                                    public void done(ParseException e) {
+                                        mapPresenter.loadGroup();
+                                        showToast("Bạn đã rời nhóm "+ itemSelected);
+                                    }
+                                });
+                            }
                         }
                         else {
-                            list.get(0).deleteInBackground(new DeleteCallback() {
-                                @Override
-                                public void done(ParseException e) {
-                                    mapPresenter.loadGroup();
-                                    showToast("Bạn đã rời nhóm "+ itemSelected);
-                                }
-                            });
+                            showToast("bạn không có nhóm");
                         }
+
 //                        ListFriendFragment.pos = -1;
                     }
 
@@ -332,6 +391,13 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
 
     @Override
     public void showListFriend(List<UserObject> lsUser) {
+        UserObject user = new UserObject();
+            Resources resources = getResources();
+            user.setAvatar(BitmapFactory.decodeResource
+                    (resources,R.drawable.add_user));
+            user.setName("Thêm bạn");
+            lsUser.add(user);
+        listUser = lsUser;
         adapter = new ListFriendAdapter(this, lsUser);
         lvFriend.setAdapter(adapter);
     }

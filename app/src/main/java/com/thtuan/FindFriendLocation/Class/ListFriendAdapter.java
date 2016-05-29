@@ -53,9 +53,11 @@ public class ListFriendAdapter extends BaseAdapter {
         }
         TextView tvName = (TextView) convertView.findViewById(R.id.tvFriendName);
         TextView tvDetail = (TextView) convertView.findViewById(R.id.tvFriendDetail);
+        TextView tvUpdate = (TextView) convertView.findViewById(R.id.tvFriendUpdate);
         final ImageView imAvatar = (ImageView) convertView.findViewById(R.id.ivListFriendAvatar);
         tvName.setText(user.get(position).getName());
         tvDetail.setText(user.get(position).getPhone());
+        tvUpdate.setText(user.get(position).getLastUpdate());
         try {
             imAvatar.setImageBitmap(user.get(position).getAvatar());
         } catch (Exception e) {

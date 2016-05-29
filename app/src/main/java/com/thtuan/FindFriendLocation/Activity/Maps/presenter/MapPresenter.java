@@ -2,6 +2,7 @@ package com.thtuan.FindFriendLocation.Activity.Maps.presenter;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -103,8 +104,8 @@ public class MapPresenter implements MapPresenterMgr {
                         showListFriend();
                     }
                     else{
-
-                        mapMgr.showToast("Bạn chưa có nhóm nào");
+                        lstGroup.add("Bạn chưa có nhóm");
+                        mapMgr.showGroupData(lstGroup);
                     }
                 }
                 else {
@@ -196,16 +197,19 @@ public class MapPresenter implements MapPresenterMgr {
                             @Override
                             protected void onPreExecute() {
                                 super.onPreExecute();
-
+                                progressDialog = new ProgressDialog(MapsActivity.mContext1);
+                                progressDialog.setTitle("Đang tải danh sách bạn bè");
+                                progressDialog.setMessage("Vui lòng đợi trong giây lát");
+                                progressDialog.setCancelable(true);
+                                progressDialog.show();
                                 isDataStream = false;
                             }
                             @Override
                             protected List<UserObject> doInBackground(List<ParseObject>... params) {
                                 lsUserObject = new ArrayList<>();
                                 for (int i=0; i < params[0].size(); i++){
-                                    ParseObject obj = params[0].get(i);
                                     UserObject user = new UserObject();
-                                    user.setName(obj.getString("alias"));
+                                    ParseObject obj = params[0].get(i);
                                     geoPoint = obj.getParseGeoPoint("location");
                                     latLng = new LatLng(geoPoint.getLatitude(), geoPoint.getLongitude());
                                     user.setLocation(latLng);
@@ -217,8 +221,14 @@ public class MapPresenter implements MapPresenterMgr {
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
+                                    user.setName(obj.getString("alias"));
                                     user.setPhone(obj.getString("phone"));
                                     user.setLastUpdate(obj.getString("update"));
+                                    user.setBirthday(obj.getString("birthday"));
+                                    user.setAddr(obj.getString("address"));
+                                    user.setContact(obj.getString("detail"));
+                                    user.setCharacter(obj.getString("sex"));
+
                                     lsUserObject.add(user);
                                 }
                                 return lsUserObject;
@@ -226,12 +236,11 @@ public class MapPresenter implements MapPresenterMgr {
                             @Override
                             protected void onPostExecute(List<UserObject> userObjects) {
                                 super.onPostExecute(userObjects);
-                                if (userObjects.size() != sizeUser){
+                                progressDialog.cancel();
                                     isDataStream = true;
                                     sizeUser = userObjects.size();
                                     mapMgr.showListFriend(lsUserObject);
                                     loadInfor();
-                                }
 
                             }
                         }.execute(listUser);

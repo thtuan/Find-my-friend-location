@@ -42,7 +42,7 @@ public class NewGroupPresenter implements NewGroupPresenterMgr {
                             public void done(ParseException e) {
                                 if(e==null){
                                     createToast("Tạo nhóm thành công");
-                                    // load map khi finish
+                                    newGroupMgr.onSuccess();
                                 }
                                 else{
                                     createToast(e.getMessage());
