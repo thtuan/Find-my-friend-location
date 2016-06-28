@@ -109,7 +109,7 @@ public class EditProfile extends Activity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ivProfile:
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                Intent intent = new Intent(Intent.ACTION_PICK);
                 intent.setType("image/*");
                 startActivityForResult(intent, Constants.REQUEST_GET_PHOTO);
                 break;

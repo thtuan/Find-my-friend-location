@@ -119,6 +119,7 @@ public class MapModel implements MapModelMgr {
                         object.put("userID",MapsActivity.myUser);
                         object.put("location", geoPoint );
                         object.put("alias",MapsActivity.myUser.getUsername());
+                        list.get(0).put("update",currentDateandTime);
                         object.saveInBackground();
                     }
                     else {

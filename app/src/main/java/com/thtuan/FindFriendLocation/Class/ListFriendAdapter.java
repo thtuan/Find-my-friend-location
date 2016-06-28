@@ -10,9 +10,14 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.akexorcist.googledirection.DirectionCallback;
+import com.akexorcist.googledirection.constant.AvoidType;
+import com.akexorcist.googledirection.model.Direction;
+import com.akexorcist.googledirection.model.Route;
 import com.parse.GetDataStreamCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
+import com.thtuan.FindFriendLocation.Activity.Maps.view.MapsActivity;
 import com.thtuan.FindFriendLocation.R;
 
 import java.io.InputStream;
@@ -47,10 +52,36 @@ public class ListFriendAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         if(convertView == null){
             convertView = inflater.inflate(R.layout.list_friend,parent,false);
         }
+        ImageView ivNavigation = (ImageView) convertView.findViewById(R.id.ivNavigation);
+        ivNavigation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MapsActivity.googleDirection.from(MyLocation.getLatLng()).to(user.get(position).getLocation())
+                        .avoid(AvoidType.FERRIES)
+                        .avoid(AvoidType.HIGHWAYS)
+                        .alternativeRoute(true)
+                        .execute(new DirectionCallback() {
+                            @Override
+                            public void onDirectionSuccess(Direction direction, String rawBody) {
+                                if (direction.isOK()){
+                                    
+                                }
+                                else {
+
+                                }
+                            }
+
+                            @Override
+                            public void onDirectionFailure(Throwable t) {
+
+                            }
+                        });
+            }
+        });
         TextView tvName = (TextView) convertView.findViewById(R.id.tvFriendName);
         TextView tvDetail = (TextView) convertView.findViewById(R.id.tvFriendDetail);
         TextView tvUpdate = (TextView) convertView.findViewById(R.id.tvFriendUpdate);

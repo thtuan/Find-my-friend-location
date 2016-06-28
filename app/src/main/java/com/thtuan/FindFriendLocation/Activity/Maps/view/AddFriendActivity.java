@@ -83,14 +83,15 @@ public class AddFriendActivity extends AppCompatActivity implements AddFriendMgr
         arrayAdapter.remove(arrayAdapter.getItem(position));
     }
 
-    /*@Override
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             // Respond to the action bar's Up/Home button
             case android.R.id.home:
+                setResult(RESULT_OK);
                 finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }*/
+    }
 }

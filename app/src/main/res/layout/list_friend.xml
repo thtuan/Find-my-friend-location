@@ -48,9 +48,15 @@
         <TextView
             android:id="@+id/tvFriendUpdate"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="update"
-            android:gravity="center"/>
+            android:layout_height="wrap_content"
+            android:text="update"/>
+        <ImageView
+            android:id="@+id/ivNavigation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_dialog_map"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/tvFriendUpdate"/>
     </RelativeLayout>
 
 </LinearLayout>

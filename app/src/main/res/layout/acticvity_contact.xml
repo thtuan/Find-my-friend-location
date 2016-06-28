@@ -1,36 +1,190 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+              android:orientation="vertical" android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:weightSum="1"
+              android:background="@android:color/holo_green_light"
+    >
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="242dp"
         android:layout_height="wrap_content"
         android:text="NHÓM TTTB"
         android:textColor="@android:color/holo_red_light"
         android:textStyle="bold"
-        android:gravity="center"/>
-    <TextView
+        android:gravity="center"
+        android:textSize="30dp"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="0.30"
+        />
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Hồ Thanh Bình"/>
-    <TextView
+        android:layout_height="90dp"
+        android:background="@drawable/border_item"
+        android:layout_margin="4dp">
+        <ImageView
+            android:id="@+id/conBinh"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:padding="4dp"
+            android:src="@drawable/binh"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="242dp"
+                android:layout_height="wrap_content"
+                android:text="Hồ Thanh Bình"
+                android:textSize="26dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="0.05"
+                />
+            <TextView
+                android:layout_width="242dp"
+                android:layout_height="wrap_content"
+                android:text="MSSV: 13520056"
+                android:textSize="26dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="0.05" />
+            <TextView
+                android:layout_width="242dp"
+                android:layout_height="wrap_content"
+                android:text="SĐT: 0982803645"
+                android:textSize="26dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="0.05" />
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Bùi Thị Thắm"/>
-    <TextView
+        android:layout_height="90dp"
+        android:layout_marginTop="3dp"
+        android:background="@android:color/holo_blue_bright"
+        android:layout_margin="4dp">
+        <ImageView
+            android:id="@+id/conTham"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:padding="4dp"
+            android:src="@drawable/tham"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="242dp"
+                android:layout_height="wrap_content"
+                android:text="Bùi Thị Thắm"
+                android:textSize="26dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="0.05" />
+            <TextView
+                android:layout_width="242dp"
+                android:layout_height="wrap_content"
+                android:text="MSSV: 13520868"
+                android:textSize="26dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="0.05" />
+            <TextView
+                android:layout_width="242dp"
+                android:layout_height="wrap_content"
+                android:text="SĐT: 01696607465"
+                android:textSize="26dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="0.05" />
+
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Phạm Thu Thủy"/>
-    <TextView
+        android:layout_height="90dp"
+        android:layout_marginTop="3dp"
+        android:background="@drawable/border_item"
+        android:layout_margin="4dp">
+        <ImageView
+            android:id="@+id/conThuy"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:padding="4dp"
+            android:src="@drawable/thuy"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="242dp"
+                android:layout_height="wrap_content"
+                android:text="Phạm Thu Thủy"
+                android:textSize="26dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="0.05" />
+            <TextView
+                android:layout_width="242dp"
+                android:layout_height="wrap_content"
+                android:text="MSSV: 13520868"
+                android:textSize="26dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="0.05" />
+            <TextView
+                android:layout_width="242dp"
+                android:layout_height="wrap_content"
+                android:text="SĐT: 01646719971"
+                android:textSize="26dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="0.05" />
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Hồ Thanh Tuân"/>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Email"/>
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Facebook"/>
+        android:layout_height="90dp"
+        android:layout_marginTop="3dp"
+        android:background="@android:color/holo_blue_bright"
+        android:layout_margin="4dp"
+        >
+        <ImageView
+            android:id="@+id/conTuan"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:padding="4dp"
+            android:src="@drawable/tuan"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="242dp"
+                android:layout_height="wrap_content"
+                android:text="Hồ Thanh Tuân"
+                android:textSize="26dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="0.05" />
+            <TextView
+                android:layout_width="242dp"
+                android:layout_height="wrap_content"
+                android:text="MSSV: 13520979"
+                android:textSize="26dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="0.05" />
+            <TextView
+                android:layout_width="242dp"
+                android:layout_height="wrap_content"
+                android:text="SĐT: 01656227819"
+                android:textSize="26dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="0.05" />
+        </LinearLayout>
+    </LinearLayout>
+
 </LinearLayout>

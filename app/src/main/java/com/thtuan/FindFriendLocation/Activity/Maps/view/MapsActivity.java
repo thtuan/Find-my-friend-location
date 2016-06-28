@@ -30,6 +30,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.akexorcist.googledirection.GoogleDirection;
+import com.akexorcist.googledirection.request.DirectionOriginRequest;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -78,10 +80,12 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
     public static MapPresenterMgr mapPresenter;
     private ProgressDialog progressDialog;
     private List<UserObject> listUser;
+    public static DirectionOriginRequest googleDirection;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        googleDirection = GoogleDirection.withServerKey("AIzaSyAhc_Sq6mbuuVqKZRuyWW20087nuY9FMiw");
         lvFriend = (ListView) findViewById(R.id.lvFriend);
         drawrer = (NavigationView) findViewById(R.id.navigationView);
         imgProfile = (ImageView) drawrer.getHeaderView(0).findViewById(R.id.imgProfile);
@@ -141,7 +145,7 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(position == lvFriend.getAdapter().getCount()-1){
                     Intent intentadd = new Intent(MapsActivity.this, AddFriendActivity.class);
-                    startActivity(intentadd);
+                    startActivityForResult(intentadd,Constants.REQUEST_NEW_FRIEND);
                 }
                 else {
                     Intent profileIntent = new Intent(MapsActivity.this, ProfileActivity.class);
@@ -293,6 +297,9 @@ public class MapsActivity extends AppCompatActivity implements MapMgr, OnMapRead
         }
         if(requestCode == Constants.REQUEST_NEW_GROUP && resultCode == RESULT_OK){
             mapPresenter.loadGroup();
+        }
+        if (requestCode == Constants.REQUEST_NEW_FRIEND && resultCode == RESULT_OK){
+            mapPresenter.showListFriend();
         }
     }
 

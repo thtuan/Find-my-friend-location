@@ -22,7 +22,7 @@ import com.thtuan.FindFriendLocation.Activity.Maps.view.MapsActivity;
 public class MyLocation implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         LocationListener{
 
-    private LatLng latLng;
+    private static LatLng latLng;
     private Location location;
     private Context context;
     private boolean canGetLocation;
@@ -52,7 +52,7 @@ public class MyLocation implements GoogleApiClient.ConnectionCallbacks, GoogleAp
         return latLng.latitude;
     }
 
-    public LatLng getLatLng() {
+    public static LatLng getLatLng() {
         return latLng;
     }
 
